@@ -204,7 +204,17 @@
     </main>
 
     <script>
-        const CORRECT_PIN = "75328";
+        // Verschlüsselte PIN (entspricht "75328")
+        const CORRECT_PIN_HASH = "52423195";
+
+        function hashPin(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = ((hash << 5) - hash) + str.charCodeAt(i);
+                hash |= 0;
+            }
+            return hash.toString();
+        }
 
         window.onload = function() {
             lucide.createIcons();
@@ -220,7 +230,7 @@
         function checkPin() {
             let inputPin = document.getElementById('pin-input').value.trim();
 
-            if (inputPin === CORRECT_PIN) {
+            if (hashPin(inputPin) === CORRECT_PIN_HASH) {
                 document.getElementById('pin-modal').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('opacity-40', 'pointer-events-none');
                 updateStatusUI(false, "Entsperrt / inaktiv");
@@ -271,13 +281,13 @@
                         'x-goog-api-key': apiKey
                     },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: "ping" }] }]
+                        contents: [{ parts: [{ text: "Test" }] }]
                     })
                 });
 
                 let data = await response.json();
 
-                if (response.ok && data.candidates) {
+                if (response.ok) {
                     updateStatusUI(true, "Bereit / aktiv");
                 } else {
                     let errMessage = data.error ? data.error.message : "API-Schlüssel ungültig.";
