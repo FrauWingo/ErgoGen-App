@@ -90,9 +90,34 @@
                     </label>
                     <input type="password" id="api-key-input" oninput="resetApiStatus()" placeholder="API-Key hier einfügen..." class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-50">
                     <div class="mt-2 text-right">
-                        <button onclick="validateApiKey()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition inline-flex items-center gap-1">
+                        <button id="validate-btn" onclick="validateApiKey()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition inline-flex items-center gap-1">
                             <i data-lucide="check" class="w-3.5 h-3.5"></i> Übernehmen
                         </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ausklappbare erweiterte KI-Einstellungen -->
+            <div class="mt-4 pt-3 border-t border-slate-100">
+                <button onclick="toggleAdvancedSettings()" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1.5 transition">
+                    <i id="advanced-chevron" data-lucide="chevron-right" class="w-4 h-4 transition-transform duration-200"></i>
+                    Erweiterte KI-Einstellungen (Modell & Prompt)
+                </button>
+
+                <div id="advanced-settings" class="hidden mt-3 p-4 bg-slate-50 rounded-lg border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Gemini Modell-Bezeichnung</label>
+                        <input type="text" id="api-model-input" value="gemini-flash-latest" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white font-mono text-slate-700">
+                        <p class="text-[10px] text-slate-400 mt-1">Standard: gemini-flash-latest</p>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">System-Prompt (Anweisungen an die KI)</label>
+                        <textarea id="system-prompt-input" class="w-full p-2 border border-slate-300 rounded-lg text-xs bg-white font-mono text-slate-700" rows="3">Du bist eine erfahrene pädiatrische Ergotherapeutin in einer Fachklinik. Deine Aufgabe ist es, aus den eingegebenen Roh-Notizen einen zusammenhängenden, professionellen und flüssig formulierten Ergotherapie-Bericht zu verfassen.
+
+STRENGSTE REGELN FÜR DIE FORMATIERUNG:
+- Verwende ABSOLUT KEINE Markdown-Sonderzeichen wie Sternchen (**), Rauten (###), Unterstriche (_) oder Aufzählungszeichen.
+- Schreibe ausschließlich in sauber gliederten, fließenden Fließtext-Absätzen.
+- Nutze zur Anonymisierung stets Platzhalter wie [das Kind] oder [der Patient] - niemals reale Namen.</textarea>
                     </div>
                 </div>
             </div>
@@ -227,6 +252,13 @@
             });
         };
 
+        function toggleAdvancedSettings() {
+            let adv = document.getElementById('advanced-settings');
+            let chevron = document.getElementById('advanced-chevron');
+            adv.classList.toggle('hidden');
+            chevron.classList.toggle('rotate-90');
+        }
+
         function checkPin() {
             let inputPin = document.getElementById('pin-input').value.trim();
 
@@ -263,7 +295,9 @@
 
         async function validateApiKey() {
             let apiKey = document.getElementById('api-key-input').value.trim();
+            let selectedModel = document.getElementById('api-model-input').value.trim() || 'gemini-flash-latest';
             let errorBox = document.getElementById('error-box');
+            let valBtn = document.getElementById('validate-btn');
             errorBox.classList.add('hidden');
 
             if (!apiKey) {
@@ -273,8 +307,11 @@
                 return;
             }
 
+            valBtn.innerText = "Prüfe...";
+            valBtn.disabled = true;
+
             try {
-                let response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent', {
+                let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -299,6 +336,10 @@
                 updateStatusUI(false, "Entsperrt / inaktiv");
                 errorBox.innerText = "Netzwerkfehler bei der Schlüsselprüfung: " + err.message;
                 errorBox.classList.remove('hidden');
+            } finally {
+                valBtn.innerHTML = '<i data-lucide="check" class="w-3.5 h-3.5"></i> Übernehmen';
+                valBtn.disabled = false;
+                lucide.createIcons();
             }
         }
 
@@ -329,6 +370,9 @@
             errorBox.classList.add('hidden');
 
             let apiKey = document.getElementById('api-key-input').value.trim();
+            let selectedModel = document.getElementById('api-model-input').value.trim() || 'gemini-flash-latest';
+            let basePrompt = document.getElementById('system-prompt-input').value.trim();
+
             if (!apiKey) {
                 updateStatusUI(false, "Entsperrt / inaktiv");
                 errorBox.innerText = "Bitte trage deinen Google Gemini API-Schlüssel in den Einstellungen ein.";
@@ -347,12 +391,7 @@
             let lengthSetting = document.getElementById('report-length').value;
             let toneSetting = document.getElementById('report-tone').value;
 
-            let systemPrompt = `Du bist eine erfahrene pädiatrische Ergotherapeutin in einer Fachklinik. Deine Aufgabe ist es, aus den eingegebenen Roh-Notizen einen zusammenhängenden, professionellen und flüssig formulierten Ergotherapie-Bericht zu verfassen.
-
-STRENGSTE REGELN FÜR DIE FORMATIERUNG:
-- Verwende ABSOLUT KEINE Markdown-Sonderzeichen wie Sternchen (**), Rauten (###), Unterstriche (_) oder Aufzählungszeichen.
-- Schreibe ausschließlich in sauber gliederten, fließenden Fließtext-Absätzen.
-- Nutze zur Anonymisierung stets Platzhalter wie [das Kind] oder [der Patient] - niemals reale Namen.
+            let systemPrompt = `${basePrompt}
 
 STIL & DUKTUS:
 - Stil: ${toneSetting === 'arzt' ? 'Klinisch-medizinischer Fachjargon für den behandelnden Pädiater/Arzt. Synthetisiere die Befunde zu einem geschlossenen medizinischen Bild, anstatt nur die Eingabefelder stumpf aufzuzählen.' : 'Empathischer, klar strukturierter Bericht für Eltern und Pädagogen.'}
@@ -372,7 +411,7 @@ STIL & DUKTUS:
             document.getElementById('preview-text').value = '';
 
             try {
-                let response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent', {
+                let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
