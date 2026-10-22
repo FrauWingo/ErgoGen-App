@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Denis Riewe">
+    <meta name="copyright" content="Denis Riewe">
     <title>ErgoGen - Pädiatrischer Berichtsgenerator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -11,225 +13,258 @@
         textarea { resize: vertical; min-height: 80px; }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen pb-12">
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col justify-between">
 
-    <!-- Header -->
-    <header class="bg-slate-900 text-white shadow-md mb-6">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="p-2 bg-indigo-600 rounded-lg">
-                    <i data-lucide="file-text" class="w-6 h-6 text-white"></i>
-                </div>
-                <div>
-                    <h1 class="text-xl font-bold tracking-wide flex items-center gap-2">
-                        ErgoGen <span class="text-xs bg-indigo-700 text-indigo-100 px-2 py-0.5 rounded uppercase font-semibold">Klinik Edition</span>
-                    </h1>
-                    <p class="text-xs text-slate-400">Pädiatrischer Berichtsgenerator</p>
-                </div>
-            </div>
-            <div id="status-badge" class="px-3 py-1 text-xs font-semibold rounded-full bg-amber-500 text-slate-900 flex items-center gap-1.5">
-                <i id="status-icon" data-lucide="lock" class="w-3.5 h-3.5"></i>
-                <span id="status-text">Gesperrt</span>
-            </div>
-        </div>
-    </header>
-
-    <!-- PIN Modal -->
-    <div id="pin-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center border border-slate-200">
-            <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600">
-                <i data-lucide="key-round" class="w-6 h-6"></i>
-            </div>
-            <h3 class="text-lg font-bold text-slate-800 mb-1">Zugang geschützt</h3>
-            <p class="text-xs text-slate-500 mb-4">Bitte gib die 5-stellige PIN ein, um das Tool freizuschalten.</p>
-            
-            <input type="password" id="pin-input" maxlength="5" placeholder="• • • • •" class="w-full text-center text-2xl tracking-widest py-3 border border-slate-300 rounded-lg mb-3 focus:ring-2 focus:ring-indigo-500 outline-none font-mono">
-            
-            <div id="pin-error" class="hidden text-xs text-red-600 mb-3 font-semibold">Ungültige PIN. Bitte erneut versuchen.</div>
-            
-            <button onclick="checkPin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow transition text-sm">
-                Freischalten
-            </button>
-        </div>
-    </div>
-
-    <main class="max-w-7xl mx-auto px-6 opacity-40 pointer-events-none transition-all duration-300" id="main-content">
-
-        <!-- Konfiguration Header -->
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 mb-6">
-            <div class="flex justify-between items-center mb-3 border-b pb-2">
-                <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                    <i data-lucide="sliders" class="w-4 h-4 text-indigo-600"></i> Einstellungen
-                </h2>
-                <div class="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200 flex items-center gap-1.5">
-                    <i data-lucide="bar-chart-2" class="w-3.5 h-3.5 text-indigo-600"></i>
-                    <span>Heute generierte Berichte: <strong id="daily-count-text" class="text-slate-800">0</strong></span>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Berichtslänge</label>
-                    <select id="report-length" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-50 mb-3">
-                        <option value="standard">Standard (Ausführlich & übersichtlich)</option>
-                        <option value="knapp">Knapp & Kurz (Prägnant)</option>
-                        <option value="ausfuehrlich">Sehr ausführlich & detailliert</option>
-                    </select>
-                    <!-- Buttons unter Berichtslänge platziert -->
-                    <div class="flex gap-2">
-                        <button onclick="clearData()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition">Daten löschen</button>
-                        <button onclick="loadDemoData()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition">Demo-Daten laden</button>
+    <div>
+        <!-- Header -->
+        <header class="bg-slate-900 text-white shadow-md mb-6">
+            <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 bg-indigo-600 rounded-lg">
+                        <i data-lucide="file-text" class="w-6 h-6 text-white"></i>
                     </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Empfänger / Tonfall</label>
-                    <select id="report-tone" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-50">
-                        <option value="arzt">Arztbericht (Klinischer Fachjargon)</option>
-                        <option value="eltern">Elternbericht (Verständlich & anschaulich)</option>
-                    </select>
-                </div>
-                <div>
-                    <label id="api-key-label" class="block text-xs font-semibold text-slate-600 mb-1">
-                        Google Gemini API-Schlüssel
-                    </label>
-                    <input type="password" id="api-key-input" placeholder="API-Key hier einfügen..." class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-50">
-                    <p class="text-[11px] text-slate-400 mt-1.5">Schlüssel wird beim Klick auf "Bericht generieren" geprüft.</p>
-                </div>
-            </div>
-
-            <!-- Ausklappbare erweiterte KI-Einstellungen -->
-            <div class="mt-4 pt-3 border-t border-slate-100">
-                <div class="flex justify-between items-center">
-                    <button onclick="toggleAdvancedSettings()" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1.5 transition">
-                        <i id="advanced-chevron" data-lucide="chevron-right" class="w-4 h-4 transition-transform duration-200"></i>
-                        Erweiterte KI-Einstellungen (Modell & Prompt)
-                    </button>
-                    <span class="text-[11px] font-mono font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">v0.8</span>
-                </div>
-
-                <div id="advanced-settings" class="hidden mt-3 p-4 bg-slate-50 rounded-lg border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Gemini Modell-Bezeichnung</label>
-                        <input type="text" id="api-model-input" value="gemini-3.8-flash" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white font-mono text-slate-700">
-                        <p class="text-[10px] text-slate-400 mt-1">Standard: gemini-3.8-flash</p>
-                    </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">System-Prompt (Anweisungen an die KI)</label>
-                        <textarea id="system-prompt-input" class="w-full p-2 border border-slate-300 rounded-lg text-xs bg-white font-mono text-slate-700" rows="3">Du bist eine erfahrene pädiatrische Ergotherapeutin in einer Fachklinik. Deine Aufgabe ist es, aus den eingegebenen Roh-Notizen einen zusammenhängenden, professionellen und flüssig formulierten Ergotherapie-Bericht zu verfassen.
-
-STRENGSTE REGELN FÜR DIE FORMATIERUNG:
-- Verwende ABSOLUT KEINE Markdown-Sonderzeichen wie Sternchen (**), Rauten (###), Unterstriche (_) oder Aufzählungszeichen.
-- Schreibe ausschließlich in sauber gliederten, fließenden Fließtext-Absätzen.
-- Nutze zur Anonymisierung stets Platzhalter wie [das Kind] oder [der Patient] - niemals reale Namen.</textarea>
+                        <h1 class="text-xl font-bold tracking-wide flex items-center gap-2">
+                            ErgoGen <span class="text-xs bg-indigo-700 text-indigo-100 px-2 py-0.5 rounded uppercase font-semibold">Klinik Edition</span>
+                        </h1>
+                        <p id="ui-subtitle" class="text-xs text-slate-400">Pädiatrischer Berichtsgenerator</p>
                     </div>
                 </div>
+                <div id="status-badge" class="px-3 py-1 text-xs font-semibold rounded-full bg-amber-500 text-slate-900 flex items-center gap-1.5">
+                    <i id="status-icon" data-lucide="lock" class="w-3.5 h-3.5"></i>
+                    <span id="status-text">Gesperrt</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- PIN Modal -->
+        <div id="pin-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center border border-slate-200">
+                <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600">
+                    <i data-lucide="key-round" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-800 mb-1">Zugang geschützt</h3>
+                <p class="text-xs text-slate-500 mb-4">Bitte gib die 5-stellige PIN ein, um das Tool freizuschalten.</p>
+                
+                <input type="password" id="pin-input" maxlength="5" placeholder="• • • • •" class="w-full text-center text-2xl tracking-widest py-3 border border-slate-300 rounded-lg mb-3 focus:ring-2 focus:ring-indigo-500 outline-none font-mono">
+                
+                <div id="pin-error" class="hidden text-xs text-red-600 mb-3 font-semibold">Ungültige PIN. Bitte erneut versuchen.</div>
+                
+                <button onclick="checkPin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow transition text-sm">
+                    Freischalten
+                </button>
             </div>
         </div>
 
-        <!-- Formular & Vorschau -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <main class="max-w-7xl mx-auto px-6 opacity-40 pointer-events-none transition-all duration-300" id="main-content">
 
-            <!-- Linke Spalte: Eingaben -->
-            <div class="space-y-6">
-
-                <!-- Zielformulierung -->
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-                    <h2 class="text-md font-bold text-slate-800 mb-1 flex items-center gap-2">
-                        <i data-lucide="target" class="w-4 h-4 text-indigo-600"></i> Zielformulierung
-                    </h2>
-                    <p class="text-xs text-slate-400 mb-2">Therapieziel (Vorgabe durch Eltern / Sorgeberechtigte)</p>
-                    <textarea id="field-ziel" class="w-full p-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="z. B. Verbesserung der Stifthaltung, selbstständiges Anziehen der Schuhe..."></textarea>
-                </div>
-
-                <!-- Befunderhebung (Diagnostik) -->
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4">
-                    <h2 class="text-md font-bold text-slate-800 border-b pb-2 flex items-center gap-2">
-                        <i data-lucide="stethoscope" class="w-4 h-4 text-indigo-600"></i> Befunderhebung (Diagnostik)
+            <!-- Konfiguration Header -->
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 mb-6">
+                <div class="flex flex-wrap justify-between items-center mb-3 border-b pb-2 gap-2">
+                    <h2 id="ui-settings-title" class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                        <i data-lucide="sliders" class="w-4 h-4 text-indigo-600"></i> Einstellungen
                     </h2>
                     
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
-                                <i data-lucide="eye" class="w-3.5 h-3.5 text-indigo-500"></i> Wahrnehmung
-                            </label>
-                            <textarea id="field-wahrnehmung" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm" placeholder="Visuell, auditiv, taktil-kinästhetisch..."></textarea>
+                    <div class="flex items-center gap-3">
+                        <!-- Sprachauswahl -->
+                        <div class="flex items-center gap-1.5 bg-slate-100 px-2 py-1 rounded-md border border-slate-200 text-xs">
+                            <i data-lucide="globe" class="w-3.5 h-3.5 text-indigo-600"></i>
+                            <select id="language-select" onchange="changeLanguage()" class="bg-transparent font-medium text-slate-700 outline-none cursor-pointer">
+                                <option value="de">Deutsch</option>
+                                <option value="en">English</option>
+                                <option value="fr">Français</option>
+                                <option value="es">Español</option>
+                            </select>
                         </div>
 
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
-                                <i data-lucide="hand" class="w-3.5 h-3.5 text-indigo-500"></i> Sensorik & SI
-                            </label>
-                            <textarea id="field-sensorik" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm" placeholder="Sensorische Integration, Tiefensensibilität..."></textarea>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
-                                <i data-lucide="brain" class="w-3.5 h-3.5 text-indigo-500"></i> Kognitive Funktionen
-                            </label>
-                            <textarea id="field-kognition" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm" placeholder="Konzentration, Ausdauer, Handlungsplanung..."></textarea>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
-                                <i data-lucide="activity" class="w-3.5 h-3.5 text-indigo-500"></i> Grobmotorik
-                            </label>
-                            <textarea id="field-grobmotorik" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm" placeholder="Koordination, Gleichgewicht, Tonus..."></textarea>
+                        <!-- Tageszähler -->
+                        <div class="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200 flex items-center gap-1.5">
+                            <i data-lucide="bar-chart-2" class="w-3.5 h-3.5 text-indigo-600"></i>
+                            <span><span id="ui-daily-label">Heute generierte Berichte</span>: <strong id="daily-count-text" class="text-slate-800">0</strong></span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Verlauf & Verhalten -->
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4">
-                    <h2 class="text-md font-bold text-slate-800 border-b pb-2 flex items-center gap-2">
-                        <i data-lucide="trending-up" class="w-4 h-4 text-indigo-600"></i> Verlauf & Verhalten
-                    </h2>
-                    <p class="text-xs text-slate-400 -mt-2">Therapieverlauf & Verhalten des Kindes im Anwesenheitszeitraum</p>
-                    <textarea id="field-verlauf" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm" placeholder="Mitarbeit, Motivation, Belastbarkeit..."></textarea>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label id="ui-lbl-length" class="block text-xs font-semibold text-slate-600 mb-1">Berichtslänge</label>
+                        <select id="report-length" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-50 mb-3">
+                            <option value="standard" id="opt-len-std">Standard (Ausführlich & übersichtlich)</option>
+                            <option value="knapp" id="opt-len-short">Kurz & Knapp (Prägnant)</option>
+                            <option value="ausfuehrlich" id="opt-len-long">Sehr ausführlich & detailliert</option>
+                        </select>
+                        <div class="flex gap-2">
+                            <button id="ui-btn-clear" onclick="clearData()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition">Daten löschen</button>
+                            <button id="ui-btn-demo" onclick="loadDemoData()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition">Demo-Daten laden</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label id="ui-lbl-tone" class="block text-xs font-semibold text-slate-600 mb-1">Empfänger / Tonfall</label>
+                        <select id="report-tone" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-50">
+                            <option value="arzt" id="opt-tone-doc">Arztbericht (Klinischer Fachjargon)</option>
+                            <option value="eltern" id="opt-tone-parent">Elternbericht (Verständlich & anschaulich)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label id="api-key-label" class="block text-xs font-semibold text-slate-600 mb-1">
+                            Google Gemini API-Schlüssel
+                        </label>
+                        <input type="password" id="api-key-input" placeholder="API-Key hier einfügen..." class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-50">
+                        <p id="ui-api-hint" class="text-[11px] text-slate-400 mt-1.5">Schlüssel wird beim Klick auf "Bericht generieren" geprüft.</p>
+                    </div>
                 </div>
 
-                <!-- Empfehlung -->
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4">
-                    <h2 class="text-md font-bold text-slate-800 border-b pb-2 flex items-center gap-2">
-                        <i data-lucide="check-circle-2" class="w-4 h-4 text-indigo-600"></i> Empfehlung
-                    </h2>
-                    <textarea id="field-empfehlung" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm" placeholder="Empfehlungen für die weitere Therapie / Maßnahmen..."></textarea>
+                <!-- Ausklappbare erweiterte KI-Einstellungen -->
+                <div class="mt-4 pt-3 border-t border-slate-100">
+                    <div class="flex justify-between items-center">
+                        <button onclick="toggleAdvancedSettings()" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1.5 transition">
+                            <i id="advanced-chevron" data-lucide="chevron-right" class="w-4 h-4 transition-transform duration-200"></i>
+                            <span id="ui-adv-title">Erweiterte KI-Einstellungen (Modell & Prompt)</span>
+                        </button>
+                        <span class="text-[11px] font-mono font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">v1.4</span>
+                    </div>
+
+                    <div id="advanced-settings" class="hidden mt-3 p-4 bg-slate-50 rounded-lg border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label id="ui-lbl-model" class="block text-xs font-semibold text-slate-600 mb-1">Gemini Modell-Bezeichnung</label>
+                            <input type="text" id="api-model-input" value="gemini-3.8-flash" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white font-mono text-slate-700">
+                            <p class="text-[10px] text-slate-400 mt-1">Standard: gemini-3.8-flash</p>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label id="ui-lbl-prompt" class="block text-xs font-semibold text-slate-600 mb-1">System-Prompt (Anweisungen an die KI)</label>
+                            <textarea id="system-prompt-input" class="w-full p-2 border border-slate-300 rounded-lg text-xs bg-white font-mono text-slate-700" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formular & Vorschau -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                <!-- Linke Spalte: Eingaben -->
+                <div class="space-y-6">
+
+                    <!-- Zielformulierung -->
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                        <h2 id="ui-sec-goal" class="text-md font-bold text-slate-800 mb-1 flex items-center gap-2">
+                            <i data-lucide="target" class="w-4 h-4 text-indigo-600"></i> Zielformulierung
+                        </h2>
+                        <p id="ui-sub-goal" class="text-xs text-slate-400 mb-2">Therapieziel (Vorgabe durch Eltern / Sorgeberechtigte)</p>
+                        <textarea id="field-ziel" class="w-full p-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="z. B. Verbesserung der Stifthaltung, selbstständiges Anziehen der Schuhe..."></textarea>
+                    </div>
+
+                    <!-- Befunderhebung (Diagnostik) -->
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4">
+                        <h2 id="ui-sec-diag" class="text-md font-bold text-slate-800 border-b pb-2 flex items-center gap-2">
+                            <i data-lucide="stethoscope" class="w-4 h-4 text-indigo-600"></i> Befunderhebung (Diagnostik)
+                        </h2>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label id="ui-lbl-perc" class="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+                                    <i data-lucide="eye" class="w-3.5 h-3.5 text-indigo-500"></i> Wahrnehmung
+                                </label>
+                                <textarea id="field-wahrnehmung" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm" placeholder="Visuell, auditiv, taktil-kinästhetisch..."></textarea>
+                            </div>
+
+                            <div>
+                                <label id="ui-lbl-sens" class="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+                                    <i data-lucide="hand" class="w-3.5 h-3.5 text-indigo-500"></i> Sensorik & SI
+                                </label>
+                                <textarea id="field-sensorik" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm" placeholder="Sensorische Integration, Tiefensensibilität..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label id="ui-lbl-cog" class="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+                                    <i data-lucide="brain" class="w-3.5 h-3.5 text-indigo-500"></i> Kognitive Funktionen
+                                </label>
+                                <textarea id="field-kognition" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm" placeholder="Konzentration, Ausdauer, Handlungsplanung..."></textarea>
+                            </div>
+
+                            <div>
+                                <label id="ui-lbl-motor" class="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+                                    <i data-lucide="activity" class="w-3.5 h-3.5 text-indigo-500"></i> Grobmotorik
+                                </label>
+                                <textarea id="field-grobmotorik" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm" placeholder="Koordination, Gleichgewicht, Tonus..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Verlauf & Verhalten -->
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4">
+                        <h2 id="ui-sec-course" class="text-md font-bold text-slate-800 border-b pb-2 flex items-center gap-2">
+                            <i data-lucide="trending-up" class="w-4 h-4 text-indigo-600"></i> Verlauf & Verhalten
+                        </h2>
+                        <p id="ui-sub-course" class="text-xs text-slate-400 -mt-2">Therapieverlauf & Verhalten des Kindes im Anwesenheitszeitraum</p>
+                        <textarea id="field-verlauf" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm" placeholder="Mitarbeit, Motivation, Belastbarkeit..."></textarea>
+                    </div>
+
+                    <!-- Empfehlung -->
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4">
+                        <h2 id="ui-sec-rec" class="text-md font-bold text-slate-800 border-b pb-2 flex items-center gap-2">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-indigo-600"></i> Empfehlung
+                        </h2>
+                        <textarea id="field-empfehlung" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm" placeholder="Empfehlungen für die weitere Therapie / Maßnahmen..."></textarea>
+                    </div>
+
+                    <!-- Datenschutz-Hinweis -->
+                    <div class="p-3 bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-xl flex items-center gap-2.5 shadow-sm">
+                        <i data-lucide="shield-alert" class="w-4 h-4 text-amber-600 shrink-0"></i>
+                        <span id="ui-privacy-hint"><strong>Datenschutz:</strong> Bitte keine persönlichen Patientendaten oder Klarnamen eingeben!</span>
+                    </div>
+
+                </div>
+
+                <!-- Rechte Spalte: Vorschau -->
+                <div>
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 sticky top-6">
+                        <div class="flex justify-between items-center mb-1">
+                            <h2 id="ui-sec-prev" class="text-md font-bold text-slate-800 flex items-center gap-2">
+                                <i data-lucide="file-check" class="w-4 h-4 text-indigo-600"></i> Vorschau
+                            </h2>
+                            <div class="flex items-center gap-2">
+                                <button onclick="copyToClipboard()" id="copy-btn" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg text-xs font-semibold transition flex items-center gap-1 border border-slate-200">
+                                    <i data-lucide="copy" class="w-3.5 h-3.5 text-indigo-600"></i>
+                                    <span id="copy-btn-text">Kopieren</span>
+                                </button>
+                                <span id="ui-editable-tag" class="text-xs text-slate-400 font-normal">Editierbar</span>
+                            </div>
+                        </div>
+
+                        <div id="loading-spinner" class="hidden my-8 text-center">
+                            <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-600 border-t-transparent"></div>
+                            <p class="text-xs text-slate-500 mt-2 font-medium"><span id="ui-loading-text">KI formuliert den Bericht...</span> (<span id="timer-count">0</span>s)</p>
+                        </div>
+
+                        <div id="error-box" class="hidden p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg mb-3"></div>
+
+                        <textarea id="preview-text" class="w-full border border-slate-300 rounded-lg p-4 text-sm font-serif h-[480px] leading-relaxed focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Hier erscheint der generierte Bericht..."></textarea>
+
+                        <!-- Generieren-Button -->
+                        <button id="generate-btn" onclick="generateReport()" class="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-md transition flex justify-center items-center gap-2 text-base">
+                            <i data-lucide="sparkles" class="w-5 h-5"></i> <span id="ui-btn-gen">Ergo-Bericht generieren</span>
+                        </button>
+
+                        <button onclick="exportToWord()" class="w-full mt-3 bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 rounded-lg shadow transition flex justify-center items-center gap-2 text-sm">
+                            <i data-lucide="download" class="w-4 h-4"></i> <span id="ui-btn-docx">als Word-Datei (.docx) herunterladen</span>
+                        </button>
+                    </div>
                 </div>
 
             </div>
 
-            <!-- Rechte Spalte: Vorschau -->
-            <div>
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 sticky top-6">
-                    <h2 class="text-md font-bold text-slate-800 mb-1 flex justify-between items-center">
-                        <span class="flex items-center gap-2"><i data-lucide="file-check" class="w-4 h-4 text-indigo-600"></i> Vorschau</span>
-                        <span class="text-xs text-slate-400 font-normal">Editierbar</span>
-                    </h2>
+        </main>
+    </div>
 
-                    <div id="loading-spinner" class="hidden my-8 text-center">
-                        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-600 border-t-transparent"></div>
-                        <p class="text-xs text-slate-500 mt-2 font-medium">KI formuliert den Bericht... (<span id="timer-count">0</span>s)</p>
-                    </div>
-
-                    <div id="error-box" class="hidden p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg mb-3"></div>
-
-                    <textarea id="preview-text" class="w-full border border-slate-300 rounded-lg p-4 text-sm font-serif h-[480px] leading-relaxed focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Hier erscheint der generierte Bericht..."></textarea>
-
-                    <!-- Generieren-Button direkt zwischen Vorschaufeld und Download-Button -->
-                    <button id="generate-btn" onclick="generateReport()" class="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-md transition flex justify-center items-center gap-2 text-base">
-                        <i data-lucide="sparkles" class="w-5 h-5"></i> Ergo-Bericht generieren
-                    </button>
-
-                    <button onclick="exportToWord()" class="w-full mt-3 bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 rounded-lg shadow transition flex justify-center items-center gap-2 text-sm">
-                        <i data-lucide="download" class="w-4 h-4"></i> als Word-Datei (.docx) herunterladen
-                    </button>
-                </div>
-            </div>
-
+    <!-- Urheber-Footer -->
+    <footer class="mt-16 py-6 bg-slate-900 text-slate-200 border-t border-slate-800 text-center text-xs">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <p id="ui-footer-left">&copy; 2026 ErgoGen &middot; Klinik Edition</p>
+            <p id="ui-footer-right" class="text-white font-medium">Entwickelt von <strong class="text-white font-semibold">Denis Riewe</strong> &middot; Alle Rechte vorbehalten.</p>
         </div>
-
-    </main>
+    </footer>
 
     <script>
         // Verschlüsselte PIN (entspricht "75328")
@@ -237,6 +272,484 @@ STRENGSTE REGELN FÜR DIE FORMATIERUNG:
 
         let timerInterval = null;
         let secondsElapsed = 0;
+        let currentStatusType = 'locked';
+        let demoIndex = 0;
+
+        // Sprachübersetzungen inklusive nativem System-Prompt pro Sprache
+        const translations = {
+            de: {
+                subtitle: "Pädiatrischer Berichtsgenerator",
+                statusLocked: "Gesperrt",
+                statusUnlocked: "Entsperrt / inaktiv",
+                statusActive: "Bereit / aktiv",
+                settingsTitle: "Einstellungen",
+                dailyLabel: "Heute generierte Berichte",
+                lblLength: "Berichtslänge",
+                optLenStd: "Standard (Ausführlich & übersichtlich)",
+                optLenShort: "Kurz & Knapp (Prägnant)",
+                optLenLong: "Sehr ausführlich & detailliert",
+                btnClear: "Daten löschen",
+                btnDemo: "Demo-Daten laden",
+                lblTone: "Empfänger / Tonfall",
+                optToneDoc: "Arztbericht (Klinischer Fachjargon)",
+                optToneParent: "Elternbericht (Verständlich & anschaulich)",
+                apiKeyLabel: "Google Gemini API-Schlüssel",
+                apiKeyPlaceholder: "API-Key hier einfügen...",
+                apiHint: "Schlüssel wird beim Klick auf 'Bericht generieren' geprüft.",
+                advTitle: "Erweiterte KI-Einstellungen (Modell & Prompt)",
+                lblModel: "Gemini Modell-Bezeichnung",
+                lblPrompt: "System-Prompt (Anweisungen an die KI)",
+                systemPrompt: `Du bist eine erfahrene pädiatrische Ergotherapeutin in einer Fachklinik. Deine Aufgabe ist es, aus den eingegebenen Roh-Notizen einen zusammenhängenden, professionellen und flüssig formulierten Ergotherapie-Bericht zu verfassen.
+
+STRENGSTE REGELN FÜR DIE FORMATIERUNG:
+- Verwende ABSOLUT KEINE Markdown-Sonderzeichen wie Sternchen (**), Rauten (###), Unterstriche (_) oder Aufzählungszeichen.
+- Schreibe ausschließlich in sauber gliederten, fließenden Fließtext-Absätzen.
+- Nutze zur Anonymisierung stets Platzhalter wie [das Kind] oder [der Patient] - niemals reale Namen.`,
+                secGoal: "Zielformulierung",
+                subGoal: "Therapieziel (Vorgabe durch Eltern / Sorgeberechtigte)",
+                secDiag: "Befunderhebung (Diagnostik)",
+                lblPerc: "Wahrnehmung",
+                lblSens: "Sensorik & SI",
+                lblCog: "Kognitive Funktionen",
+                lblMotor: "Grobmotorik",
+                secCourse: "Verlauf & Verhalten",
+                subCourse: "Therapieverlauf & Verhalten des Kindes im Anwesenheitszeitraum",
+                secRec: "Empfehlung",
+                privacyHint: "<strong>Datenschutz:</strong> Bitte keine persönlichen Patientendaten oder Klarnamen eingeben!",
+                secPrev: "Vorschau",
+                copyBtn: "Kopieren",
+                copySuccess: "Kopiert!",
+                editableTag: "Editierbar",
+                loadingText: "KI formuliert den Bericht...",
+                btnGen: "Ergo-Bericht generieren",
+                btnDocx: "als Word-Datei (.docx) herunterladen",
+                targetPlaceholder: "z. B. Verbesserung der Stifthaltung, selbstständiges Anziehen der Schuhe...",
+                percPlaceholder: "Visuell, auditiv, taktil-kinästhetisch...",
+                sensPlaceholder: "Sensorische Integration, Tiefensensibilität...",
+                cogPlaceholder: "Konzentration, Ausdauer, Handlungsplanung...",
+                motorPlaceholder: "Koordination, Gleichgewicht, Tonus...",
+                coursePlaceholder: "Mitarbeit, Motivation, Belastbarkeit...",
+                recPlaceholder: "Empfehlungen für die weitere Therapie / Maßnahmen...",
+                previewPlaceholder: "Hier erscheint der generierte Bericht...",
+                footerLeft: "&copy; 2026 ErgoGen &middot; Klinik Edition",
+                footerRight: "Entwickelt von <strong>Denis Riewe</strong> &middot; Alle Rechte vorbehalten.",
+                errNoKey: "Bitte trage deinen Google Gemini API-Schlüssel in den Einstellungen ein.",
+                errApi: "Fehler bei der KI-Generierung: ",
+                errNetwork: "Netzwerkfehler: ",
+                errNoText: "Kein Text zum Exportieren vorhanden!",
+                confirmMissingInputs: "Fehlende Eingaben - Bericht trotzdem generieren?"
+            },
+            en: {
+                subtitle: "Pediatric Report Generator",
+                statusLocked: "Locked",
+                statusUnlocked: "Unlocked / inactive",
+                statusActive: "Ready / active",
+                settingsTitle: "Settings",
+                dailyLabel: "Reports generated today",
+                lblLength: "Report Length",
+                optLenStd: "Standard (Detailed & clear)",
+                optLenShort: "Short & Concise",
+                optLenLong: "Very detailed & extensive",
+                btnClear: "Clear Data",
+                btnDemo: "Load Demo Data",
+                lblTone: "Recipient / Tone",
+                optToneDoc: "Medical Report (Clinical Jargon)",
+                optToneParent: "Parent Report (Accessible & clear)",
+                apiKeyLabel: "Google Gemini API Key",
+                apiKeyPlaceholder: "Paste API key here...",
+                apiHint: "Key is validated upon clicking 'Generate Report'.",
+                advTitle: "Advanced AI Settings (Model & Prompt)",
+                lblModel: "Gemini Model Name",
+                lblPrompt: "System Prompt (AI Instructions)",
+                systemPrompt: `You are an experienced pediatric occupational therapist at a specialized clinic. Your task is to write a cohesive, professional, and fluently formulated occupational therapy report based on the raw notes provided.
+
+STRICTEST FORMATTING RULES:
+- Use ABSOLUTELY NO Markdown special characters such as asterisks (**), hashes (###), underscores (_), or bullet points.
+- Write exclusively in cleanly structured, fluent paragraphs of running text.
+- Always use placeholders such as [the child] or [the patient] for anonymization - never use real names.`,
+                secGoal: "Goal Formulation",
+                subGoal: "Therapy Goal (Provided by parents / guardians)",
+                secDiag: "Diagnostic Findings",
+                lblPerc: "Perception",
+                lblSens: "Sensory & SI",
+                lblCog: "Cognitive Functions",
+                lblMotor: "Gross Motor Skills",
+                secCourse: "Course & Behavior",
+                subCourse: "Therapy progress and child's behavior during treatment",
+                secRec: "Recommendation",
+                privacyHint: "<strong>Privacy:</strong> Please do not enter personal patient data or real names!",
+                secPrev: "Preview",
+                copyBtn: "Copy",
+                copySuccess: "Copied!",
+                editableTag: "Editable",
+                loadingText: "AI is formulating the report...",
+                btnGen: "Generate Ergo Report",
+                btnDocx: "Download as Word (.docx)",
+                targetPlaceholder: "e.g., improving pencil grip, independent dressing...",
+                percPlaceholder: "Visual, auditory, tactile-kinesthetic...",
+                sensPlaceholder: "Sensory integration, proprioception...",
+                cogPlaceholder: "Concentration, endurance, action planning...",
+                motorPlaceholder: "Coordination, balance, tone...",
+                coursePlaceholder: "Cooperation, motivation, resilience...",
+                recPlaceholder: "Recommendations for further therapy / measures...",
+                previewPlaceholder: "The generated report will appear here...",
+                footerLeft: "&copy; 2026 ErgoGen &middot; Clinic Edition",
+                footerRight: "Developed by <strong>Denis Riewe</strong> &middot; All rights reserved.",
+                errNoKey: "Please enter your Google Gemini API key in the settings.",
+                errApi: "AI generation error: ",
+                errNetwork: "Network error: ",
+                errNoText: "No text available for export!",
+                confirmMissingInputs: "Missing inputs - generate report anyway?"
+            },
+            fr: {
+                subtitle: "Générateur de rapports pédiatriques",
+                statusLocked: "Verrouillé",
+                statusUnlocked: "Déverrouillé / inactif",
+                statusActive: "Prêt / actif",
+                settingsTitle: "Paramètres",
+                dailyLabel: "Rapports générés aujourd'hui",
+                lblLength: "Longueur du rapport",
+                optLenStd: "Standard (Détaillé & clair)",
+                optLenShort: "Court & Concis",
+                optLenLong: "Très détaillé & approfondi",
+                btnClear: "Effacer les données",
+                btnDemo: "Charger données démo",
+                lblTone: "Destinataire / Ton",
+                optToneDoc: "Rapport médical (Jargon clinique)",
+                optToneParent: "Rapport aux parents (Accessible)",
+                apiKeyLabel: "Clé API Google Gemini",
+                apiKeyPlaceholder: "Collez la clé API ici...",
+                apiHint: "La clé est vérifiée lors du clic sur 'Générer le rapport'.",
+                advTitle: "Paramètres IA avancés (Modèle & Prompt)",
+                lblModel: "Nom du modèle Gemini",
+                lblPrompt: "Prompt Système (Instructions à l'IA)",
+                systemPrompt: `Vous êtes une ergothérapeute pédiatrique expérimentée dans une clinique spécialisée. Votre tâche est de rédiger un rapport d'ergothérapie cohérent, professionnel et fluide à partir des notes brutes fournies.
+
+RÈGLES DE FORMATAGE LES PLUS STRICTES :
+- N'utilisez ABSOLUTEMENT AUCUN caractère spécial Markdown tel que des astérisques (**), dièses (###), soulignés (_) ou puces.
+- Rédigez exclusivement sous forme de paragraphes de texte courant, clairement structurés et fluides.
+- Utilisez toujours des espaces réservés tels que [l'enfant] ou [le patient] pour l'anonymisation - jamais de vrais noms.`,
+                secGoal: "Formulation de l'objectif",
+                subGoal: "Objectif thérapeutique (Fourni par les parents)",
+                secDiag: "Bilan diagnostique",
+                lblPerc: "Perception",
+                lblSens: "Sensorielles & IS",
+                lblCog: "Fonctions cognitives",
+                lblMotor: "Motricité globale",
+                secCourse: "Évolution & Comportement",
+                subCourse: "Progrès de la thérapie et comportement de l'enfant",
+                secRec: "Recommandations",
+                privacyHint: "<strong>Confidentialité :</strong> Ne saisissez pas de données personnelles de patients !",
+                secPrev: "Aperçu",
+                copyBtn: "Copier",
+                copySuccess: "Copié !",
+                editableTag: "Modifiable",
+                loadingText: "L'IA rédige le rapport...",
+                btnGen: "Générer le rapport",
+                btnDocx: "Télécharger en Word (.docx)",
+                targetPlaceholder: "ex. amélioration de la préhension, autonomie pour s'habiller...",
+                percPlaceholder: "Visuelle, auditive, tactile...",
+                sensPlaceholder: "Intégration sensorielle, proprioception...",
+                cogPlaceholder: "Concentration, endurance, planification...",
+                motorPlaceholder: "Coordination, équilibre, tonus...",
+                coursePlaceholder: "Coopération, motivation, endurance...",
+                recPlaceholder: "Recommandations pour la suite de la thérapie...",
+                previewPlaceholder: "Le rapport généré apparaîtra ici...",
+                footerLeft: "&copy; 2026 ErgoGen &middot; Édition Clinique",
+                footerRight: "Développé par <strong>Denis Riewe</strong> &middot; Tous droits réservés.",
+                errNoKey: "Veuillez entrer votre clé API Google Gemini dans les paramètres.",
+                errApi: "Erreur de génération IA : ",
+                errNetwork: "Erreur réseau : ",
+                errNoText: "Aucun texte à exporter !",
+                confirmMissingInputs: "Données manquantes - générer le rapport quand même ?"
+            },
+            es: {
+                subtitle: "Generador de informes pediátricos",
+                statusLocked: "Bloqueado",
+                statusUnlocked: "Desbloqueado / inactivo",
+                statusActive: "Listo / activo",
+                settingsTitle: "Configuración",
+                dailyLabel: "Informes generados hoy",
+                lblLength: "Longitud del informe",
+                optLenStd: "Estándar (Detallado y claro)",
+                optLenShort: "Corto y conciso",
+                optLenLong: "Muy detallado y exhaustivo",
+                btnClear: "Borrar datos",
+                btnDemo: "Cargar datos de demostración",
+                lblTone: "Destinatario / Tono",
+                optToneDoc: "Informe médico (Jerga clínica)",
+                optToneParent: "Informe para padres (Comprensible)",
+                apiKeyLabel: "Clave API de Google Gemini",
+                apiKeyPlaceholder: "Pegue la clave API aquí...",
+                apiHint: "La clave se verifica al hacer clic en 'Generar informe'.",
+                advTitle: "Configuración avanzada de IA (Modelo y Prompt)",
+                lblModel: "Nombre del modelo Gemini",
+                lblPrompt: "Prompt del sistema (Instrucciones para la IA)",
+                systemPrompt: `Eres una terapeuta ocupacional pediátrica experimentada en una clínica especializada. Tu tarea es redactar un informe de terapia ocupacional coherente, profesional y fluido basado en las notas en bruto proporcionadas.
+
+REGLAS DE FORMATO MÁS ESTRICTAS:
+- No utilices ABSOLUTAMENTE NINGÚN carácter especial de Markdown como asteriscos (**), almohadillas (###), guiones bajos (_) o viñetas.
+- Escribe exclusivamente en párrafos de texto continuo, claramente estructurados y fluidos.
+- Utiliza siempre marcadores de posición como [el niño] o [el paciente] para la anonimización, nunca nombres reales.`,
+                secGoal: "Formulación de objetivos",
+                subGoal: "Objetivo terapéutico (Proporcionado por los padres)",
+                secDiag: "Evaluación diagnóstica",
+                lblPerc: "Percepción",
+                lblSens: "Sensorial e IS",
+                lblCog: "Funciones cognitivas",
+                lblMotor: "Motricidad gruesa",
+                secCourse: "Evolución y comportamiento",
+                subCourse: "Progreso de la terapia y comportamiento del niño",
+                secRec: "Recomendaciones",
+                privacyHint: "<strong>Privacidad:</strong> ¡No introduzca datos personales de pacientes!",
+                secPrev: "Vista previa",
+                copyBtn: "Copiar",
+                copySuccess: "¡Copiado!",
+                editableTag: "Editable",
+                loadingText: "La IA está redactando el informe...",
+                btnGen: "Generar informe",
+                btnDocx: "Descargar en Word (.docx)",
+                targetPlaceholder: "ej. mejora en el agarre del lápiz, vestirse solo...",
+                percPlaceholder: "Visual, auditiva, táctil...",
+                sensPlaceholder: "Integración sensorial, propiocepción...",
+                cogPlaceholder: "Concentración, resistencia, planificación...",
+                motorPlaceholder: "Coordinación, equilibrio, tono...",
+                coursePlaceholder: "Cooperación, motivación, resistencia...",
+                recPlaceholder: "Recomendaciones para el tratamiento posterior...",
+                previewPlaceholder: "El informe generado aparecerá aquí...",
+                footerLeft: "&copy; 2026 ErgoGen &middot; Edición Clínica",
+                footerRight: "Desarrollado por <strong>Denis Riewe</strong> &middot; Todos los derechos reservados.",
+                errNoKey: "Por favor, introduzca su clave API de Google Gemini en la configuración.",
+                errApi: "Error de generación de IA: ",
+                errNetwork: "Error de red: ",
+                errNoText: "¡No hay texto disponible para exportar!",
+                confirmMissingInputs: "Faltan datos - ¿generar informe de todos modos?"
+            }
+        };
+
+        const demoDatasets = {
+            de: [
+                {
+                    ziel: "Verbesserung der Fein- und Grafomotorik für ein flüssiges Schriftbild in der Schule. Stärkung der Frustrationstoleranz.",
+                    wahrnehmung: "Visuelle Wahrnehmung unauffällig. Figur-Grund-Differenzierung zeigt leichte Unsicherheiten bei komplexen Suchbildern.",
+                    sensorik: "Taktil-propriozeptive Reizverarbeitung leicht verlangsamt. Zeigt vermindertes Spürbewusstsein in den Händen.",
+                    kognition: "Aufmerksamkeitsspanne bei ca. 10-12 Minuten. Rasch ablenkbar durch Umweltreize. Handlungsplanung strukturiert, aber langsam.",
+                    grobmotorik: "Gleichgewichtstests altersgemäß. Verkrampfte Schultergürtelmuskulatur bei feingewandten Tätigkeiten.",
+                    verlauf: "Das Kind war stets hochmotiviert und freundlich. Zeigte Fortschritte im Umgang mit Stiftdruck, ermüdet jedoch nach 15 Minuten stark.",
+                    empfehlung: "Fortführung der Ergotherapie empfohlen (10 Einheiten Motorik-Funktionstraining). Weiterhin Übungen zur Stärkung der Händigkeit."
+                },
+                {
+                    ziel: "Förderung der Grobmotorik, Rumpfstabilität und Ballkoordination beim Werfen und Fangen im Sportunterricht.",
+                    wahrnehmung: "Visuell-räumliche Orientierung leicht beeinträchtigt, besonders bei Flugbahneinschätzungen von Bällen.",
+                    sensorik: "Gleichgewichtssystem (vestibulär) reagiert übersensibel auf Drehbewegungen und Schaukeln.",
+                    kognition: "Gute Ausdauer bei strukturierten Einzelspielen. Schwierigkeiten bei schnellen Regelwechseln in der Gruppe.",
+                    grobmotorik: "Erhöhter Tonus im Schulter- und Nackenbereich. Unsicherheiten beim Einbeinstand und Hüpfen.",
+                    verlauf: "Freudige Mitarbeit bei Parcours-Übungen. Zeigt zunehmend Mut bei neuen Herausforderungen.",
+                    empfehlung: "Psychomotorische Gruppe sowie Gleichgewichtstraining zu Hause (z. B. Kreiselbrett)."
+                },
+                {
+                    ziel: "Reduktion der taktilen Abwehr und Steigerung der Selbstständigkeit bei alltäglichen Handlungsabläufen.",
+                    wahrnehmung: "Auditive Filterfunktion eingeschränkt; reagiert empfindlich auf laute Nebengeräusche.",
+                    sensorik: "Ausgeprägte taktile Überempfindlichkeit an den Händen und im Gesichtsbereich (Berührungsängste).",
+                    kognition: "Benötigt klare visuelle Strukturen und Vorhersehbarkeit, um handlungsfähig zu bleiben.",
+                    grobmotorik: "Allgemeine Bewegungsunsicherheit auf unebenem Untergrund.",
+                    verlauf: "Schrittweise Annäherung an verschiedene Materialien (Knete, Sand) war erfolgreich. Weniger Vermeidungshaltungen.",
+                    empfehlung: "Sensorische Integrationstherapie 1x wöchentlich sowie Einbindung von Bürstungen im häuslichen Alltag."
+                }
+            ],
+            en: [
+                {
+                    ziel: "Improving fine and graphomotor skills for fluid handwriting at school. Strengthening frustration tolerance.",
+                    wahrnehmung: "Visual perception unremarkable. Figure-ground differentiation shows minor difficulties with complex visual searches.",
+                    sensorik: "Tactile-proprioceptive processing slightly slowed. Shows reduced tactile awareness in the hands.",
+                    kognition: "Attention span approx. 10-12 minutes. Easily distracted by environmental stimuli. Action planning structured but slow.",
+                    grobmotorik: "Balance tests age-appropriate. Tense shoulder girdle muscles during fine motor tasks.",
+                    verlauf: "The child was consistently highly motivated and friendly. Showed progress in pencil pressure regulation, but tires quickly after 15 minutes.",
+                    empfehlung: "Continuation of occupational therapy recommended (10 sessions motor function training). Continued exercises to strengthen hand dominance."
+                },
+                {
+                    ziel: "Promoting gross motor skills, core stability, and ball coordination during sports.",
+                    wahrnehmung: "Visuospatial orientation slightly impaired, especially when judging ball trajectories.",
+                    sensorik: "Vestibular system reacts hypersensitively to rotational movements and swinging.",
+                    kognition: "Good endurance during structured individual games. Difficulty with rapid rule changes in group settings.",
+                    grobmotorik: "Increased muscle tone in shoulders and neck. Instability during single-leg stance and hopping.",
+                    verlauf: "Enthusiastic participation in obstacle courses. Shows growing courage with new physical challenges.",
+                    empfehlung: "Psychomotor group training and balance exercises at home (e.g., balance board)."
+                },
+                {
+                    ziel: "Reduction of tactile defensiveness and increase in independence during daily routines.",
+                    wahrnehmung: "Auditory filtering impaired; sensitive to loud background noises.",
+                    sensorik: "Pronounced tactile hypersensitivity on hands and face (reluctance to touch certain textures).",
+                    kognition: "Requires clear visual structures and predictability to remain focused.",
+                    grobmotorik: "General motor insecurity on uneven surfaces.",
+                    verlauf: "Gradual exposure to various textures (clay, sand) was successful. Decreased avoidance behavior.",
+                    empfehlung: "Sensory integration therapy once weekly and integration of tactile input techniques at home."
+                }
+            ],
+            fr: [
+                {
+                    ziel: "Amélioration de la motricité fine et graphomotrice pour une écriture fluide. Renforcement de la tolérance à la frustration.",
+                    wahrnehmung: "Perception visuelle normale. Légères difficultés de différenciation figure-fond sur des images complexes.",
+                    sensorik: "Traitement tactile et proprioceptif légèrement ralenti. Conscience tactile réduite dans les mains.",
+                    kognition: "Attention d'environ 10-12 minutes. Facilement distractible. Planification motrice structurée mais lente.",
+                    grobmotorik: "Équilibre adapté à l'âge. Tensions musculaires au niveau des épaules lors des tâches fines.",
+                    verlauf: "L'enfant a été très motivé et coopératif. Progrès dans la gestion de la pression du crayon, mais fatigue rapide après 15 minutes.",
+                    empfehlung: "Poursuite de l'ergothérapie recommandée (10 séances). Exercices continus pour la latéralité."
+                },
+                {
+                    ziel: "Développement de la motricité globale, de la stabilité du tronc et de la coordination visuomotrice.",
+                    wahrnehmung: "Orientation visuo-spatiale légèrement altérée lors du suivi de trajectoires de balles.",
+                    sensorik: "Hypersensibilité vestibulaire aux mouvements rotatifs et balancements.",
+                    kognition: "Bonne endurance en individuel. Difficultés lors des changements rapides de règles en groupe.",
+                    grobmotorik: "Tonus accru dans la ceinture scapulaire. Instabilité sur un pied.",
+                    verlauf: "Participation enthousiaste aux parcours moteurs. Confiance accrue face aux nouveaux défis.",
+                    empfehlung: "Séances de psychomotricité et exercices d'équilibre à domicile."
+                },
+                {
+                    ziel: "Réduction de l'hyperréactivité tactile et autonomie accrue dans les gestes de la vie quotidienne.",
+                    wahrnehmung: "Filtrage auditif altéré ; sensibilité aux bruits de fond.",
+                    sensorik: "Hypersensibilité tactile marquée sur les mains et le visage (évitement de certaines textures).",
+                    kognition: "Besoin de repères visuels clairs et de prévisibilité.",
+                    grobmotorik: "Insécurité motrice sur sols inégaux.",
+                    verlauf: "Exposition progressive aux textures (sable, pâte à modeler) réussie. Diminution des comportements d'évitement.",
+                    empfehlung: "Thérapie d'intégration sensorielle hebdomadaire."
+                }
+            ],
+            es: [
+                {
+                    ziel: "Mejora de la motricidad fina y grafomotricidad para una escritura fluida. Fortalecimiento de la tolerancia a la frustración.",
+                    wahrnehmung: "Percepción visual adecuada. Ligeras dificultades en discriminación figura-fondo.",
+                    sensorik: "Procesamiento táctil-propioceptivo ligeramente ralentizado. Conciencia táctil disminuida en las manos.",
+                    kognition: "Atención de 10-12 minutos. Distraído fácilmente por estímulos externos. Planificación motora lenta.",
+                    grobmotorik: "Equilibrio adecuado a su edad. Tensión en cintura escapular durante tareas finas.",
+                    verlauf: "El niño mostró alta motivación y colaboración. Progreso en la presión del lápiz, aunque se fatiga tras 15 minutos.",
+                    empfehlung: "Continuación de terapia ocupacional recomendada (10 sesiones). Ejercicios de fortalecimiento manual."
+                },
+                {
+                    ziel: "Promoción de la motricidad gruesa, estabilidad de tronco y coordinación óculo-manual.",
+                    wahrnehmung: "Orientación visoespacial ligeramente afectada al calcular trayectorias de objetos.",
+                    sensorik: "Sistema vestibular hipersensible a movimientos rotatorios.",
+                    kognition: "Buena resistencia en juegos individuales. Dificultades con cambios rápidos de reglas grupales.",
+                    grobmotorik: "Tono muscular elevado en hombros y cuello. Inestabilidad en apoyo monopodal.",
+                    verlauf: "Participación entusiasta en circuitos motores. Mayor valentía ante nuevos retos físicos.",
+                    empfehlung: "Grupo de psicomotricidad y ejercicios de equilibrio en casa."
+                },
+                {
+                    ziel: "Reducción de la defensividad táctil y mayor independencia en actividades cotidianas.",
+                    wahrnehmung: "Filtrado auditivo limitado; sensibilidad a ruidos ambientales fuertes.",
+                    sensorik: "Hipersensibilidad táctil pronunciada en manos y cara (rechazo a ciertas texturas).",
+                    kognition: "Requiere estructuras visuales claras y predictibilidad.",
+                    grobmotorik: "Inseguridad motriz general en superficies irregulares.",
+                    verlauf: "Exposición gradual a texturas (arena, plastilina) exitosa. Menores conductas de evitación.",
+                    empfehlung: "Terapia de integración sensorial semanal."
+                }
+            ]
+        };
+
+        function updateStatusUI(type) {
+            currentStatusType = type;
+            let lang = document.getElementById('language-select').value;
+            let t = translations[lang] || translations.de;
+            let badge = document.getElementById('status-badge');
+            let statusTextSpan = document.getElementById('status-text');
+
+            if (type === 'locked') {
+                statusTextSpan.innerText = t.statusLocked;
+                badge.className = "px-3 py-1 text-xs font-semibold rounded-full bg-amber-500 text-slate-900 flex items-center gap-1.5";
+            } else if (type === 'unlocked') {
+                statusTextSpan.innerText = t.statusUnlocked;
+                badge.className = "px-3 py-1 text-xs font-semibold rounded-full bg-amber-500 text-slate-900 flex items-center gap-1.5";
+            } else if (type === 'active') {
+                statusTextSpan.innerText = t.statusActive;
+                badge.className = "px-3 py-1 text-xs font-semibold rounded-full bg-emerald-500 text-white flex items-center gap-1.5";
+            }
+        }
+
+        function changeLanguage() {
+            let lang = document.getElementById('language-select').value;
+            let t = translations[lang] || translations.de;
+
+            document.getElementById('ui-subtitle').innerText = t.subtitle;
+            updateStatusUI(currentStatusType);
+            
+            document.getElementById('ui-settings-title').innerHTML = `<i data-lucide="sliders" class="w-4 h-4 text-indigo-600"></i> ${t.settingsTitle}`;
+            document.getElementById('ui-daily-label').innerText = t.dailyLabel;
+            
+            document.getElementById('ui-lbl-length').innerText = t.lblLength;
+            document.getElementById('opt-len-std').innerText = t.optLenStd;
+            document.getElementById('opt-len-short').innerText = t.optLenShort;
+            document.getElementById('opt-len-long').innerText = t.optLenLong;
+            document.getElementById('ui-btn-clear').innerText = t.btnClear;
+            document.getElementById('ui-btn-demo').innerText = t.btnDemo;
+
+            document.getElementById('ui-lbl-tone').innerText = t.lblTone;
+            document.getElementById('opt-tone-doc').innerText = t.optToneDoc;
+            document.getElementById('opt-tone-parent').innerText = t.optToneParent;
+
+            document.getElementById('api-key-label').innerText = t.apiKeyLabel;
+            document.getElementById('api-key-input').placeholder = t.apiKeyPlaceholder;
+            document.getElementById('ui-api-hint').innerText = t.apiHint;
+
+            document.getElementById('ui-adv-title').innerText = t.advTitle;
+            document.getElementById('ui-lbl-model').innerText = t.lblModel;
+            document.getElementById('ui-lbl-prompt').innerText = t.lblPrompt;
+            document.getElementById('system-prompt-input').value = t.systemPrompt;
+
+            document.getElementById('ui-sec-goal').innerHTML = `<i data-lucide="target" class="w-4 h-4 text-indigo-600"></i> ${t.secGoal}`;
+            document.getElementById('ui-sub-goal').innerText = t.subGoal;
+            document.getElementById('field-ziel').placeholder = t.targetPlaceholder;
+
+            document.getElementById('ui-sec-diag').innerHTML = `<i data-lucide="stethoscope" class="w-4 h-4 text-indigo-600"></i> ${t.secDiag}`;
+            document.getElementById('ui-lbl-perc').innerHTML = `<i data-lucide="eye" class="w-3.5 h-3.5 text-indigo-500"></i> ${t.lblPerc}`;
+            document.getElementById('field-wahrnehmung').placeholder = t.percPlaceholder;
+            
+            document.getElementById('ui-lbl-sens').innerHTML = `<i data-lucide="hand" class="w-3.5 h-3.5 text-indigo-500"></i> ${t.lblSens}`;
+            document.getElementById('field-sensorik').placeholder = t.sensPlaceholder;
+
+            document.getElementById('ui-lbl-cog').innerHTML = `<i data-lucide="brain" class="w-3.5 h-3.5 text-indigo-500"></i> ${t.lblCog}`;
+            document.getElementById('field-kognition').placeholder = t.cogPlaceholder;
+
+            document.getElementById('ui-lbl-motor').innerHTML = `<i data-lucide="activity" class="w-3.5 h-3.5 text-indigo-500"></i> ${t.lblMotor}`;
+            document.getElementById('field-grobmotorik').placeholder = t.motorPlaceholder;
+
+            document.getElementById('ui-sec-course').innerHTML = `<i data-lucide="trending-up" class="w-4 h-4 text-indigo-600"></i> ${t.secCourse}`;
+            document.getElementById('ui-sub-course').innerText = t.subCourse;
+            document.getElementById('field-verlauf').placeholder = t.coursePlaceholder;
+
+            document.getElementById('ui-sec-rec').innerHTML = `<i data-lucide="check-circle-2" class="w-4 h-4 text-indigo-600"></i> ${t.secRec}`;
+            document.getElementById('field-empfehlung').placeholder = t.recPlaceholder;
+
+            document.getElementById('ui-privacy-hint').innerHTML = t.privacyHint;
+
+            document.getElementById('ui-sec-prev').innerHTML = `<i data-lucide="file-check" class="w-4 h-4 text-indigo-600"></i> ${t.secPrev}`;
+            document.getElementById('copy-btn-text').innerText = t.copyBtn;
+            document.getElementById('ui-editable-tag').innerText = t.editableTag;
+            document.getElementById('ui-loading-text').innerText = t.loadingText;
+            document.getElementById('preview-text').placeholder = t.previewPlaceholder;
+
+            document.getElementById('ui-btn-gen').innerText = t.btnGen;
+            document.getElementById('ui-btn-docx').innerText = t.btnDocx;
+
+            document.getElementById('ui-footer-left').innerHTML = t.footerLeft;
+            document.getElementById('ui-footer-right').innerHTML = t.footerRight;
+
+            lucide.createIcons();
+        }
+
+        function copyToClipboard() {
+            let text = document.getElementById('preview-text').value;
+            let lang = document.getElementById('language-select').value;
+            let t = translations[lang] || translations.de;
+            if (!text) return;
+
+            navigator.clipboard.writeText(text).then(() => {
+                let copyText = document.getElementById('copy-btn-text');
+                copyText.innerText = t.copySuccess;
+                setTimeout(() => {
+                    copyText.innerText = t.copyBtn;
+                }, 2000);
+            });
+        }
 
         function hashPin(str) {
             let hash = 0;
@@ -247,14 +760,29 @@ STRENGSTE REGELN FÜR DIE FORMATIERUNG:
             return hash.toString();
         }
 
+        function checkPin() {
+            let inputPin = document.getElementById('pin-input').value.trim();
+
+            if (hashPin(inputPin) === CORRECT_PIN_HASH) {
+                document.getElementById('pin-modal').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('opacity-40', 'pointer-events-none');
+                updateStatusUI('unlocked');
+            } else {
+                document.getElementById('pin-error').classList.remove('hidden');
+            }
+        }
+
         window.onload = function() {
             lucide.createIcons();
+            document.getElementById('system-prompt-input').value = translations.de.systemPrompt;
+            
             document.getElementById('pin-input').focus();
             document.getElementById('pin-input').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') checkPin();
             });
             
             updateDailyCountUI();
+            updateStatusUI('locked');
         };
 
         function getTodayString() {
@@ -292,39 +820,20 @@ STRENGSTE REGELN FÜR DIE FORMATIERUNG:
             chevron.classList.toggle('rotate-90');
         }
 
-        function checkPin() {
-            let inputPin = document.getElementById('pin-input').value.trim();
-
-            if (hashPin(inputPin) === CORRECT_PIN_HASH) {
-                document.getElementById('pin-modal').classList.add('hidden');
-                document.getElementById('main-content').classList.remove('opacity-40', 'pointer-events-none');
-                updateStatusUI(false, "Entsperrt / inaktiv");
-            } else {
-                document.getElementById('pin-error').classList.remove('hidden');
-            }
-        }
-
-        function updateStatusUI(isActive, statusText) {
-            let badge = document.getElementById('status-badge');
-            let text = document.getElementById('status-text');
-
-            text.innerText = statusText;
-
-            if (isActive) {
-                badge.className = "px-3 py-1 text-xs font-semibold rounded-full bg-emerald-500 text-white flex items-center gap-1.5";
-            } else {
-                badge.className = "px-3 py-1 text-xs font-semibold rounded-full bg-amber-500 text-slate-900 flex items-center gap-1.5";
-            }
-        }
-
         function loadDemoData() {
-            document.getElementById('field-ziel').value = "Verbesserung der Fein- und Grafomotorik für ein flüssiges Schriftbild in der Schule. Stärkung der Frustrationstoleranz.";
-            document.getElementById('field-wahrnehmung').value = "Visuelle Wahrnehmung unauffällig. Figur-Grund-Differenzierung zeigt leichte Unsicherheiten bei komplexen Suchbildern.";
-            document.getElementById('field-sensorik').value = "Taktil-propriozeptive Reizverarbeitung leicht verlangsamt. Zeigt vermindertes Spürbewusstsein in den Händen.";
-            document.getElementById('field-kognition').value = "Aufmerksamkeitsspanne bei ca. 10-12 Minuten. Rasch ablenkbar durch Umweltreize. Handlungsplanung strukturiert, aber langsam.";
-            document.getElementById('field-grobmotorik').value = "Gleichgewichtstests altersgemäß. Verkrampfte Schultergürtelmuskulatur bei feingewandten Tätigkeiten.";
-            document.getElementById('field-verlauf').value = "Das Kind war stets hochmotiviert und freundlich. Zeigte Fortschritte im Umgang mit Stiftdruck, ermüdet jedoch nach 15 Minuten stark.";
-            document.getElementById('field-empfehlung').value = "Fortführung der Ergotherapie empfohlen (10 Einheiten Motorik-Funktionstraining). Weiterhin Übungen zur Stärkung der Händigkeit.";
+            let lang = document.getElementById('language-select').value;
+            let list = demoDatasets[lang] || demoDatasets.de;
+            
+            let data = list[demoIndex];
+            demoIndex = (demoIndex + 1) % list.length;
+
+            document.getElementById('field-ziel').value = data.ziel;
+            document.getElementById('field-wahrnehmung').value = data.wahrnehmung;
+            document.getElementById('field-sensorik').value = data.sensorik;
+            document.getElementById('field-kognition').value = data.kognition;
+            document.getElementById('field-grobmotorik').value = data.grobmotorik;
+            document.getElementById('field-verlauf').value = data.verlauf;
+            document.getElementById('field-empfehlung').value = data.empfehlung;
         }
 
         function clearData() {
@@ -342,49 +851,47 @@ STRENGSTE REGELN FÜR DIE FORMATIERUNG:
         async function generateReport() {
             let errorBox = document.getElementById('error-box');
             let genBtn = document.getElementById('generate-btn');
+            let previewTextarea = document.getElementById('preview-text');
             errorBox.classList.add('hidden');
+
+            let selectedLang = document.getElementById('language-select').value;
+            let t = translations[selectedLang] || translations.de;
+
+            // Eingaben-Prüfung: Falls absolut alle Notizfelder leer sind, abfragen
+            let ziel = document.getElementById('field-ziel').value.trim();
+            let wahrnehmung = document.getElementById('field-wahrnehmung').value.trim();
+            let sensorik = document.getElementById('field-sensorik').value.trim();
+            let kognition = document.getElementById('field-kognition').value.trim();
+            let grobmotorik = document.getElementById('field-grobmotorik').value.trim();
+            let verlauf = document.getElementById('field-verlauf').value.trim();
+            let empfehlung = document.getElementById('field-empfehlung').value.trim();
+
+            if (!ziel && !wahrnehmung && !sensorik && !kognition && !grobmotorik && !verlauf && !empfehlung) {
+                let proceed = confirm(t.confirmMissingInputs);
+                if (!proceed) return;
+            }
 
             let apiKey = document.getElementById('api-key-input').value.trim();
             let selectedModel = document.getElementById('api-model-input').value.trim() || 'gemini-3.8-flash';
-            let basePrompt = document.getElementById('system-prompt-input').value.trim();
+            let systemPrompt = document.getElementById('system-prompt-input').value.trim();
 
             if (!apiKey) {
-                updateStatusUI(false, "Entsperrt / inaktiv");
-                errorBox.innerText = "Bitte trage deinen Google Gemini API-Schlüssel in den Einstellungen ein.";
+                updateStatusUI('unlocked');
+                errorBox.innerText = t.errNoKey;
                 errorBox.classList.remove('hidden');
                 return;
             }
 
-            let ziel = document.getElementById('field-ziel').value;
-            let wahrnehmung = document.getElementById('field-wahrnehmung').value;
-            let sensorik = document.getElementById('field-sensorik').value;
-            let kognition = document.getElementById('field-kognition').value;
-            let grobmotorik = document.getElementById('field-grobmotorik').value;
-            let verlauf = document.getElementById('field-verlauf').value;
-            let empfehlung = document.getElementById('field-empfehlung').value;
-
             let lengthSetting = document.getElementById('report-length').value;
             let toneSetting = document.getElementById('report-tone').value;
 
-            let systemPrompt = `${basePrompt}
+            let styleInstruction = `\n\nSTIL & DUKTUS:\n- Stil: ${toneSetting === 'arzt' ? 'Klinisch-medizinischer Fachjargon. Synthetisiere die Befunde zu einem geschlossenen Bild.' : 'Empathischer, klar strukturierter Bericht für Eltern und Pädagogen.'}\n- Umfang: ${lengthSetting === 'knapp' ? 'Prägnant und auf das Wesentliche fokussiert.' : lengthSetting === 'ausfuehrlich' ? 'Ausführliche, tiefgehende Ausformulierung mit allen Details.' : 'Standard-Umfang mit klarer Struktur.'}\n- Erfinde keine Fakten, sondern übersetze die Stichpunkte professionell.`;
 
-STIL & DUKTUS:
-- Stil: ${toneSetting === 'arzt' ? 'Klinisch-medizinischer Fachjargon für den behandelnden Pädiater/Arzt. Synthetisiere die Befunde zu einem geschlossenen medizinischen Bild, anstatt nur die Eingabefelder stumpf aufzuzählen.' : 'Empathischer, klar strukturierter Bericht für Eltern und Pädagogen.'}
-- Umfang: ${lengthSetting === 'knapp' ? 'Prägnant und auf das Wesentliche fokussiert.' : lengthSetting === 'ausfuehrlich' ? 'Ausführliche, tiefgehende Ausformulierung mit allen Details.' : 'Standard-Umfang mit klarer klinischer Struktur.'}
-- Erfinde keine Fakten, sondern übersetze die Stichpunkte in hochprofessionelle medizinische Formulierungen.`;
+            let userNotes = `BEFUND-NOTIZEN:\n- Therapieziel: ${ziel}\n- Wahrnehmung: ${wahrnehmung}\n- Sensorik:${sensorik}\n- Kognition: ${kognition}\n- Motorik:${grobmotorik}\n- Verlauf: ${verlauf}\n- Empfehlung:${empfehlung}`;
 
-            let userNotes = `BEFUND-NOTIZEN:
-- Therapieziel: ${ziel}
-- Visuelle/Auditive Wahrnehmung: ${wahrnehmung}
-- Sensorische Integration / Sensorik: ${sensorik}
-- Kognition & Handlungsplanung: ${kognition}
-- Motorik & Koordination: ${grobmotorik}
-- Therapieverlauf & Verhalten: ${verlauf}
-- Therapeutische Empfehlung: ${empfehlung}`;
-
-            // UI für Ladevorgang vorbereiten
+            // UI für Ladevorgang & Streaming vorbereiten
             document.getElementById('loading-spinner').classList.remove('hidden');
-            document.getElementById('preview-text').value = '';
+            previewTextarea.value = '';
             genBtn.disabled = true;
             genBtn.classList.add('opacity-50', 'cursor-not-allowed');
 
@@ -398,39 +905,70 @@ STIL & DUKTUS:
             }, 1000);
 
             try {
-                let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent`, {
+                // Aufruf des Streaming-Endpoints via streamGenerateContent mit Alt-SSE
+                let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:streamGenerateContent?alt=sse&key=${apiKey}`, {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'x-goog-api-key': apiKey
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{
                             parts: [
-                                { text: systemPrompt + "\n\n" + userNotes }
+                                { text: systemPrompt + styleInstruction + "\n\n" + userNotes }
                             ]
                         }]
                     })
                 });
 
-                let data = await response.json();
-
-                if (response.ok && data.candidates && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
-                    let cleanedText = data.candidates[0].content.parts[0].text.replace(/[*#_`]/g, '');
-                    document.getElementById('preview-text').value = cleanedText;
-                    updateStatusUI(true, "Bereit / aktiv");
-                    incrementDailyCount(); // Bei erfolgreicher Erstellung hochzählen
-                } else {
-                    let errMessage = data.error ? data.error.message : "Fehler beim API-Aufruf.";
-                    errorBox.innerText = "Fehler bei der KI-Generierung: " + errMessage;
-                    errorBox.classList.remove('hidden');
-                    updateStatusUI(false, "Entsperrt / inaktiv");
+                if (!response.ok) {
+                    let errData = await response.json().catch(() => ({}));
+                    let errMessage = errData.error ? errData.error.message : "Fehler beim API-Aufruf (" + response.status + ")";
+                    throw new Error(errMessage);
                 }
 
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder("utf-8");
+                let accumulatedText = "";
+                let buffer = "";
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+                    let lines = buffer.split("\n");
+                    buffer = lines.pop(); // Unvollständige letzte Zeile im Puffer behalten
+
+                    for (let line of lines) {
+                        line = line.trim();
+                        if (line.startsWith("data: ")) {
+                            let jsonStr = line.replace(/^data:\s*/, "");
+                            if (jsonStr === "[DONE]") continue;
+                            try {
+                                let parsed = JSON.parse(jsonStr);
+                                if (parsed.candidates && parsed.candidates[0].content && parsed.candidates[0].content.parts[0].text) {
+                                    let chunk = parsed.candidates[0].content.parts[0].text;
+                                    accumulatedText += chunk;
+                                    
+                                    // Markdown säubern und live ins Textfeld schreiben
+                                    let cleanedText = accumulatedText.replace(/[*#_`]/g, '');
+                                    previewTextarea.value = cleanedText;
+                                    
+                                    // Automatisch nach unten scrollen, um dem Textfluss zu folgen
+                                    previewTextarea.scrollTop = previewTextarea.scrollHeight;
+                                }
+                            } catch (e) {
+                                // Ignoriere unvollständige JSON-Chunks
+                            }
+                        }
+                    }
+                }
+
+                updateStatusUI('active');
+                incrementDailyCount();
+
             } catch (err) {
-                errorBox.innerText = "Netzwerkfehler: " + err.message;
+                errorBox.innerText = t.errNetwork + err.message;
                 errorBox.classList.remove('hidden');
-                updateStatusUI(false, "Entsperrt / inaktiv");
+                updateStatusUI('unlocked');
             } finally {
                 clearInterval(timerInterval);
                 document.getElementById('loading-spinner').classList.add('hidden');
@@ -441,8 +979,11 @@ STIL & DUKTUS:
 
         function exportToWord() {
             let text = document.getElementById('preview-text').value;
+            let selectedLang = document.getElementById('language-select').value;
+            let t = translations[selectedLang] || translations.de;
+
             if (!text) {
-                alert("Kein Text zum Exportieren vorhanden!");
+                alert(t.errNoText);
                 return;
             }
 
