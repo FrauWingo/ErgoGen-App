@@ -121,7 +121,7 @@
                             <i id="advanced-chevron" data-lucide="chevron-right" class="w-4 h-4 transition-transform duration-200"></i>
                             <span id="ui-adv-title">Erweiterte KI-Einstellungen (Modell & Prompt)</span>
                         </button>
-                        <span class="text-[11px] font-mono font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">v1.4</span>
+                        <span class="text-[11px] font-mono font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">v1.6</span>
                     </div>
 
                     <div id="advanced-settings" class="hidden mt-3 p-4 bg-slate-50 rounded-lg border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -138,6 +138,26 @@
                 </div>
             </div>
 
+            <!-- Entwurf Speichern / Laden Bar (Zwischen Einstellungen und Ziel) -->
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 mb-6">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-2">
+                    <div class="flex items-center gap-2 text-xs font-semibold text-slate-600">
+                        <i data-lucide="folder-sync" class="w-4 h-4 text-indigo-600"></i>
+                        <span id="ui-draft-label">Sitzungs-Entwurf verwalten:</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="saveDraftToFile()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 border border-indigo-200">
+                            <i data-lucide="save" class="w-3.5 h-3.5"></i> <span id="ui-btn-save-draft">Entwurf zwischenspeichern</span>
+                        </button>
+                        <label class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 border border-slate-200 cursor-pointer">
+                            <i data-lucide="folder-open" class="w-3.5 h-3.5 text-indigo-600"></i> <span id="ui-btn-load-draft">Entwurf laden</span>
+                            <input type="file" id="load-file-input" accept=".txt,.json" onchange="loadDraftFromFile(event)" class="hidden">
+                        </label>
+                    </div>
+                </div>
+                <p id="ui-draft-hint" class="text-[11px] text-slate-400 italic">Entwürfe werden ggf. im Download-Ordner des Browsers abgelegt und müssen nach Fertigstellung manuell gelöscht werden.</p>
+            </div>
+
             <!-- Formular & Vorschau -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
@@ -146,10 +166,10 @@
 
                     <!-- Zielformulierung -->
                     <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-                        <h2 id="ui-sec-goal" class="text-md font-bold text-slate-800 mb-1 flex items-center gap-2">
+                        <h2 id="ui-sec-goal" class="text-md font-bold text-slate-800 mb-1 border-b pb-2 flex items-center gap-2">
                             <i data-lucide="target" class="w-4 h-4 text-indigo-600"></i> Zielformulierung
                         </h2>
-                        <p id="ui-sub-goal" class="text-xs text-slate-400 mb-2">Therapieziel (Vorgabe durch Eltern / Sorgeberechtigte)</p>
+                        <p id="ui-sub-goal" class="text-xs text-slate-400 mb-2 mt-2">Therapieziel (Vorgabe durch Eltern / Sorgeberechtigte)</p>
                         <textarea id="field-ziel" class="w-full p-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="z. B. Verbesserung der Stifthaltung, selbstständiges Anziehen der Schuhe..."></textarea>
                     </div>
 
@@ -221,16 +241,16 @@
                 <div>
                     <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 sticky top-6">
                         <div class="flex justify-between items-center mb-1">
-                            <h2 id="ui-sec-prev" class="text-md font-bold text-slate-800 flex items-center gap-2">
-                                <i data-lucide="file-check" class="w-4 h-4 text-indigo-600"></i> Vorschau
-                            </h2>
                             <div class="flex items-center gap-2">
-                                <button onclick="copyToClipboard()" id="copy-btn" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg text-xs font-semibold transition flex items-center gap-1 border border-slate-200">
-                                    <i data-lucide="copy" class="w-3.5 h-3.5 text-indigo-600"></i>
-                                    <span id="copy-btn-text">Kopieren</span>
-                                </button>
+                                <h2 id="ui-sec-prev" class="text-md font-bold text-slate-800 flex items-center gap-2">
+                                    <i data-lucide="file-check" class="w-4 h-4 text-indigo-600"></i> Vorschau
+                                </h2>
                                 <span id="ui-editable-tag" class="text-xs text-slate-400 font-normal">Editierbar</span>
                             </div>
+                            <button onclick="copyToClipboard()" id="copy-btn" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg text-xs font-semibold transition flex items-center gap-1 border border-slate-200">
+                                <i data-lucide="copy" class="w-3.5 h-3.5 text-indigo-600"></i>
+                                <span id="copy-btn-text">Kopieren</span>
+                            </button>
                         </div>
 
                         <div id="loading-spinner" class="hidden my-8 text-center">
@@ -305,6 +325,10 @@ STRENGSTE REGELN FÜR DIE FORMATIERUNG:
 - Verwende ABSOLUT KEINE Markdown-Sonderzeichen wie Sternchen (**), Rauten (###), Unterstriche (_) oder Aufzählungszeichen.
 - Schreibe ausschließlich in sauber gliederten, fließenden Fließtext-Absätzen.
 - Nutze zur Anonymisierung stets Platzhalter wie [das Kind] oder [der Patient] - niemals reale Namen.`,
+                draftLabel: "Sitzungs-Entwurf verwalten:",
+                btnSaveDraft: "Entwurf zwischenspeichern",
+                btnLoadDraft: "Entwurf laden",
+                draftHint: "Entwürfe werden ggf. im Download-Ordner des Browsers abgelegt und müssen nach Fertigstellung manuell gelöscht werden.",
                 secGoal: "Zielformulierung",
                 subGoal: "Therapieziel (Vorgabe durch Eltern / Sorgeberechtigte)",
                 secDiag: "Befunderhebung (Diagnostik)",
@@ -337,7 +361,8 @@ STRENGSTE REGELN FÜR DIE FORMATIERUNG:
                 errApi: "Fehler bei der KI-Generierung: ",
                 errNetwork: "Netzwerkfehler: ",
                 errNoText: "Kein Text zum Exportieren vorhanden!",
-                confirmMissingInputs: "Fehlende Eingaben - Bericht trotzdem generieren?"
+                confirmMissingInputs: "Fehlende Eingaben - Bericht trotzdem generieren?",
+                errLoadDraft: "Fehler beim Laden des Entwurfs. Ungültiges Dateiformat."
             },
             en: {
                 subtitle: "Pediatric Report Generator",
@@ -367,6 +392,10 @@ STRICTEST FORMATTING RULES:
 - Use ABSOLUTELY NO Markdown special characters such as asterisks (**), hashes (###), underscores (_), or bullet points.
 - Write exclusively in cleanly structured, fluent paragraphs of running text.
 - Always use placeholders such as [the child] or [the patient] for anonymization - never use real names.`,
+                draftLabel: "Manage Session Draft:",
+                btnSaveDraft: "Save Draft",
+                btnLoadDraft: "Load Draft",
+                draftHint: "Drafts may be saved in the browser's download folder and must be deleted manually once completed.",
                 secGoal: "Goal Formulation",
                 subGoal: "Therapy Goal (Provided by parents / guardians)",
                 secDiag: "Diagnostic Findings",
@@ -399,7 +428,8 @@ STRICTEST FORMATTING RULES:
                 errApi: "AI generation error: ",
                 errNetwork: "Network error: ",
                 errNoText: "No text available for export!",
-                confirmMissingInputs: "Missing inputs - generate report anyway?"
+                confirmMissingInputs: "Missing inputs - generate report anyway?",
+                errLoadDraft: "Error loading draft. Invalid file format."
             },
             fr: {
                 subtitle: "Générateur de rapports pédiatriques",
@@ -429,6 +459,10 @@ RÈGLES DE FORMATAGE LES PLUS STRICTES :
 - N'utilisez ABSOLUTEMENT AUCUN caractère spécial Markdown tel que des astérisques (**), dièses (###), soulignés (_) ou puces.
 - Rédigez exclusivement sous forme de paragraphes de texte courant, clairement structurés et fluides.
 - Utilisez toujours des espaces réservés tels que [l'enfant] ou [le patient] pour l'anonymisation - jamais de vrais noms.`,
+                draftLabel: "Gérer le brouillon :",
+                btnSaveDraft: "Sauvegarder le brouillon",
+                btnLoadDraft: "Charger le brouillon",
+                draftHint: "Les brouillons peuvent être enregistrés dans le dossier de téléchargement du navigateur et doivent être supprimés manuellement une fois terminés.",
                 secGoal: "Formulation de l'objectif",
                 subGoal: "Objectif thérapeutique (Fourni par les parents)",
                 secDiag: "Bilan diagnostique",
@@ -461,7 +495,8 @@ RÈGLES DE FORMATAGE LES PLUS STRICTES :
                 errApi: "Erreur de génération IA : ",
                 errNetwork: "Erreur réseau : ",
                 errNoText: "Aucun texte à exporter !",
-                confirmMissingInputs: "Données manquantes - générer le rapport quand même ?"
+                confirmMissingInputs: "Données manquantes - générer le rapport quand même ?",
+                errLoadDraft: "Erreur lors du chargement du brouillon. Format invalide."
             },
             es: {
                 subtitle: "Generador de informes pediátricos",
@@ -491,6 +526,10 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
 - No utilices ABSOLUTAMENTE NINGÚN carácter especial de Markdown como asteriscos (**), almohadillas (###), guiones bajos (_) o viñetas.
 - Escribe exclusivamente en párrafos de texto continuo, claramente estructurados y fluidos.
 - Utiliza siempre marcadores de posición como [el niño] o [el paciente] para la anonimización, nunca nombres reales.`,
+                draftLabel: "Gestionar borrador:",
+                btnSaveDraft: "Guardar borrador",
+                btnLoadDraft: "Cargar borrador",
+                draftHint: "Los borradores pueden guardarse en la carpeta de descargas del navegador y deben eliminarse manualmente al finalizar.",
                 secGoal: "Formulación de objetivos",
                 subGoal: "Objetivo terapéutico (Proporcionado por los padres)",
                 secDiag: "Evaluación diagnóstica",
@@ -523,7 +562,8 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
                 errApi: "Error de generación de IA: ",
                 errNetwork: "Error de red: ",
                 errNoText: "¡No hay texto disponible para exportar!",
-                confirmMissingInputs: "Faltan datos - ¿generar informe de todos modos?"
+                confirmMissingInputs: "Faltan datos - ¿generar informe de todos modos?",
+                errLoadDraft: "Error al cargar el borrador. Formato no válido."
             }
         };
 
@@ -695,6 +735,11 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
             document.getElementById('ui-lbl-prompt').innerText = t.lblPrompt;
             document.getElementById('system-prompt-input').value = t.systemPrompt;
 
+            document.getElementById('ui-draft-label').innerText = t.draftLabel;
+            document.getElementById('ui-btn-save-draft').innerText = t.btnSaveDraft;
+            document.getElementById('ui-btn-load-draft').innerText = t.btnLoadDraft;
+            document.getElementById('ui-draft-hint').innerText = t.draftHint;
+
             document.getElementById('ui-sec-goal').innerHTML = `<i data-lucide="target" class="w-4 h-4 text-indigo-600"></i> ${t.secGoal}`;
             document.getElementById('ui-sub-goal').innerText = t.subGoal;
             document.getElementById('field-ziel').placeholder = t.targetPlaceholder;
@@ -734,6 +779,86 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
             document.getElementById('ui-footer-right').innerHTML = t.footerRight;
 
             lucide.createIcons();
+        }
+
+        // Entwurf als Datei speichern (mit echtem Datei-Dialog & Firefox-Fallback)
+        async function saveDraftToFile() {
+            let data = {
+                ziel: document.getElementById('field-ziel').value,
+                wahrnehmung: document.getElementById('field-wahrnehmung').value,
+                sensorik: document.getElementById('field-sensorik').value,
+                kognition: document.getElementById('field-kognition').value,
+                grobmotorik: document.getElementById('field-grobmotorik').value,
+                verlauf: document.getElementById('field-verlauf').value,
+                empfehlung: document.getElementById('field-empfehlung').value,
+                preview: document.getElementById('preview-text').value
+            };
+
+            let now = new Date();
+            let yyyy = now.getFullYear();
+            let mm = String(now.getMonth() + 1).padStart(2, '0');
+            let dd = String(now.getDate()).padStart(2, '0');
+            let hh = String(now.getHours()).padStart(2, '0');
+            let min = String(now.getMinutes()).padStart(2, '0');
+            let ss = String(now.getSeconds()).padStart(2, '0');
+            let timestamp = `${yyyy}${mm}${dd}-${hh}${min}${ss}`;
+            let filename = `EG_Entwurf_${timestamp}.txt`;
+            let fileContent = JSON.stringify(data, null, 2);
+
+            if (window.showSaveFilePicker) {
+                try {
+                    const handle = await window.showSaveFilePicker({
+                        suggestedName: filename,
+                        types: [{
+                            description: 'Text Files',
+                            accept: { 'text/plain': ['.txt'] }
+                        }]
+                    });
+                    const writable = await handle.createWritable();
+                    await writable.write(fileContent);
+                    await writable.close();
+                    return;
+                } catch (err) {
+                    if (err.name === 'AbortError') return;
+                }
+            }
+
+            let blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+            let url = window.URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Entwurf aus Datei laden
+        function loadDraftFromFile(event) {
+            let file = event.target.files[0];
+            let lang = document.getElementById('language-select').value;
+            let t = translations[lang] || translations.de;
+            if (!file) return;
+
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    let data = JSON.parse(e.target.result);
+                    document.getElementById('field-ziel').value = data.ziel || '';
+                    document.getElementById('field-wahrnehmung').value = data.wahrnehmung || '';
+                    document.getElementById('field-sensorik').value = data.sensorik || '';
+                    document.getElementById('field-kognition').value = data.kognition || '';
+                    document.getElementById('field-grobmotorik').value = data.grobmotorik || '';
+                    document.getElementById('field-verlauf').value = data.verlauf || '';
+                    document.getElementById('field-empfehlung').value = data.empfehlung || '';
+                    document.getElementById('preview-text').value = data.preview || '';
+                } catch (err) {
+                    alert(t.errLoadDraft);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
         }
 
         function copyToClipboard() {
@@ -857,7 +982,6 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
             let selectedLang = document.getElementById('language-select').value;
             let t = translations[selectedLang] || translations.de;
 
-            // Eingaben-Prüfung: Falls absolut alle Notizfelder leer sind, abfragen
             let ziel = document.getElementById('field-ziel').value.trim();
             let wahrnehmung = document.getElementById('field-wahrnehmung').value.trim();
             let sensorik = document.getElementById('field-sensorik').value.trim();
@@ -887,15 +1011,13 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
 
             let styleInstruction = `\n\nSTIL & DUKTUS:\n- Stil: ${toneSetting === 'arzt' ? 'Klinisch-medizinischer Fachjargon. Synthetisiere die Befunde zu einem geschlossenen Bild.' : 'Empathischer, klar strukturierter Bericht für Eltern und Pädagogen.'}\n- Umfang: ${lengthSetting === 'knapp' ? 'Prägnant und auf das Wesentliche fokussiert.' : lengthSetting === 'ausfuehrlich' ? 'Ausführliche, tiefgehende Ausformulierung mit allen Details.' : 'Standard-Umfang mit klarer Struktur.'}\n- Erfinde keine Fakten, sondern übersetze die Stichpunkte professionell.`;
 
-            let userNotes = `BEFUND-NOTIZEN:\n- Therapieziel: ${ziel}\n- Wahrnehmung: ${wahrnehmung}\n- Sensorik:${sensorik}\n- Kognition: ${kognition}\n- Motorik:${grobmotorik}\n- Verlauf: ${verlauf}\n- Empfehlung:${empfehlung}`;
+            let userNotes = `BEFUND-NOTIZEN:\n- Therapieziel: ${ziel}\n- Wahrnehmung: ${wahrnehmung}\n- Sensorik: ${sensorik}\n- Kognition: ${kognition}\n- Motorik: ${grobmotorik}\n- Verlauf: ${verlauf}\n- Empfehlung: ${empfehlung}`;
 
-            // UI für Ladevorgang & Streaming vorbereiten
             document.getElementById('loading-spinner').classList.remove('hidden');
             previewTextarea.value = '';
             genBtn.disabled = true;
             genBtn.classList.add('opacity-50', 'cursor-not-allowed');
 
-            // Timer starten
             secondsElapsed = 0;
             document.getElementById('timer-count').innerText = secondsElapsed;
             clearInterval(timerInterval);
@@ -905,7 +1027,6 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
             }, 1000);
 
             try {
-                // Aufruf des Streaming-Endpoints via streamGenerateContent mit Alt-SSE
                 let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:streamGenerateContent?alt=sse&key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -935,7 +1056,7 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
 
                     buffer += decoder.decode(value, { stream: true });
                     let lines = buffer.split("\n");
-                    buffer = lines.pop(); // Unvollständige letzte Zeile im Puffer behalten
+                    buffer = lines.pop();
 
                     for (let line of lines) {
                         line = line.trim();
@@ -948,16 +1069,11 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
                                     let chunk = parsed.candidates[0].content.parts[0].text;
                                     accumulatedText += chunk;
                                     
-                                    // Markdown säubern und live ins Textfeld schreiben
                                     let cleanedText = accumulatedText.replace(/[*#_`]/g, '');
                                     previewTextarea.value = cleanedText;
-                                    
-                                    // Automatisch nach unten scrollen, um dem Textfluss zu folgen
                                     previewTextarea.scrollTop = previewTextarea.scrollHeight;
                                 }
-                            } catch (e) {
-                                // Ignoriere unvollständige JSON-Chunks
-                            }
+                            } catch (e) {}
                         }
                     }
                 }
