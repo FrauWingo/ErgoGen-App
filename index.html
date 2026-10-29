@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" id="html-root">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,9 +11,30 @@
     <script src="https://unpkg.com/docx@7.8.2/build/index.js"></script>
     <style>
         textarea { resize: vertical; min-height: 80px; }
+        /* Sanfter Dark Mode & Button-Anpassungen */
+        .dark-mode { background-color: #0f172a !important; color: #f8fafc !important; }
+        .dark-mode .bg-white { background-color: #1e293b !important; color: #f8fafc !important; border-color: #334155 !important; }
+        .dark-mode .text-slate-800 { color: #f8fafc !important; }
+        .dark-mode .text-slate-700 { color: #cbd5e1 !important; }
+        .dark-mode .text-slate-600 { color: #94a3b8 !important; }
+        .dark-mode .text-slate-500 { color: #94a3b8 !important; }
+        .dark-mode .text-slate-400 { color: #94a3b8 !important; }
+        .dark-mode .bg-slate-100 { background-color: #334155 !important; color: #f8fafc !important; }
+        .dark-mode .bg-slate-50 { background-color: #0f172a !important; color: #f8fafc !important; border-color: #334155 !important; }
+        .dark-mode input, .dark-mode select, .dark-mode textarea { background-color: #0f172a !important; color: #f8fafc !important; border-color: #475569 !important; }
+        .dark-mode input::placeholder, .dark-mode textarea::placeholder { color: #64748b !important; }
+        .dark-mode .border-slate-200, .dark-mode .border-slate-300, .dark-mode .border-slate-100 { border-color: #334155 !important; }
+        .dark-mode .bg-amber-50 { background-color: #451a03 !important; border-color: #78350f !important; color: #fef3c7 !important; }
+        
+        /* Dark Mode für bisher helle Buttons */
+        .dark-mode .bg-slate-200 { background-color: #334155 !important; color: #e2e8f0 !important; }
+        .dark-mode .bg-slate-200:hover { background-color: #475569 !important; }
+        .dark-mode .bg-indigo-50 { background-color: #1e1b4b !important; color: #c7d2fe !important; border-color: #312e81 !important; }
+        .dark-mode .bg-indigo-50:hover { background-color: #312e81 !important; }
+        .dark-mode .bg-slate-300 { background-color: #475569 !important; color: #cbd5e1 !important; }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col justify-between">
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col justify-between transition-colors duration-200">
 
     <div>
         <!-- Header -->
@@ -66,6 +87,11 @@
                     </h2>
                     
                     <div class="flex items-center gap-3">
+                        <!-- Dark Mode Toggle -->
+                        <button onclick="toggleDarkMode()" id="dark-mode-btn" class="bg-slate-100 hover:bg-slate-200 text-slate-700 p-1.5 rounded-md border border-slate-200 text-xs flex items-center gap-1.5 transition" title="Dark Mode umschalten">
+                            <i id="dark-mode-icon" data-lucide="moon" class="w-3.5 h-3.5 text-indigo-600"></i>
+                        </button>
+
                         <!-- Sprachauswahl -->
                         <div class="flex items-center gap-1.5 bg-slate-100 px-2 py-1 rounded-md border border-slate-200 text-xs">
                             <i data-lucide="globe" class="w-3.5 h-3.5 text-indigo-600"></i>
@@ -121,7 +147,7 @@
                             <i id="advanced-chevron" data-lucide="chevron-right" class="w-4 h-4 transition-transform duration-200"></i>
                             <span id="ui-adv-title">Erweiterte KI-Einstellungen (Modell & Prompt)</span>
                         </button>
-                        <span class="text-[11px] font-mono font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">v1.6</span>
+                        <span class="text-[11px] font-mono font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">v2.0</span>
                     </div>
 
                     <div id="advanced-settings" class="hidden mt-3 p-4 bg-slate-50 rounded-lg border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -138,24 +164,28 @@
                 </div>
             </div>
 
-            <!-- Entwurf Speichern / Laden Bar (Zwischen Einstellungen und Ziel) -->
+            <!-- Eingaben Verwalten Bar -->
             <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 mb-6">
-                <div class="flex flex-wrap items-center justify-between gap-3 mb-2">
-                    <div class="flex items-center gap-2 text-xs font-semibold text-slate-600">
-                        <i data-lucide="folder-sync" class="w-4 h-4 text-indigo-600"></i>
-                        <span id="ui-draft-label">Sitzungs-Entwurf verwalten:</span>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-center">
+                    <div>
+                        <div class="flex items-center gap-2 text-xs font-bold text-slate-700 mb-3">
+                            <i data-lucide="folder-sync" class="w-4 h-4 text-indigo-600"></i>
+                            <span id="ui-draft-label">Sitzungseingaben verwalten:</span>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button onclick="saveDraftToFile()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 border border-indigo-200">
+                                <i data-lucide="save" class="w-3.5 h-3.5"></i> <span id="ui-btn-save-draft">Eingaben zwischenspeichern</span>
+                            </button>
+                            <label class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 border border-slate-200 cursor-pointer">
+                                <i data-lucide="folder-open" class="w-3.5 h-3.5 text-indigo-600"></i> <span id="ui-btn-load-draft">Eingaben laden</span>
+                                <input type="file" id="load-file-input" accept=".txt,.json" onchange="loadDraftFromFile(event)" class="hidden">
+                            </label>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="saveDraftToFile()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 border border-indigo-200">
-                            <i data-lucide="save" class="w-3.5 h-3.5"></i> <span id="ui-btn-save-draft">Entwurf zwischenspeichern</span>
-                        </button>
-                        <label class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 border border-slate-200 cursor-pointer">
-                            <i data-lucide="folder-open" class="w-3.5 h-3.5 text-indigo-600"></i> <span id="ui-btn-load-draft">Entwurf laden</span>
-                            <input type="file" id="load-file-input" accept=".txt,.json" onchange="loadDraftFromFile(event)" class="hidden">
-                        </label>
+                    <div>
+                        <p id="ui-draft-hint" class="text-[11px] text-slate-400 italic lg:text-right">Daten werden gegebenenfalls im Downloadordner des Browsers abgelegt und müssen nach Fertigstellung manuell gelöscht werden.</p>
                     </div>
                 </div>
-                <p id="ui-draft-hint" class="text-[11px] text-slate-400 italic">Entwürfe werden ggf. im Download-Ordner des Browsers abgelegt und müssen nach Fertigstellung manuell gelöscht werden.</p>
             </div>
 
             <!-- Formular & Vorschau -->
@@ -163,6 +193,24 @@
 
                 <!-- Linke Spalte: Eingaben -->
                 <div class="space-y-6">
+
+                    <!-- Eingangsdiagnose -->
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                        <h2 id="ui-sec-diag-in" class="text-md font-bold text-slate-800 mb-1 border-b pb-2 flex items-center gap-2">
+                            <i data-lucide="clipboard-plus" class="w-4 h-4 text-indigo-600"></i> Eingangsdiagnose
+                        </h2>
+                        <p id="ui-sub-diag-in" class="text-xs text-slate-400 mb-2 mt-2">Vorhandene Diagnosen / ICD-Codes bei Klinikaufnahme</p>
+                        <textarea id="field-eingangsdiagnose" class="w-full p-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="z. B. F82.0 Umschriebene Entwicklungsstörung der motorischen Funktionen..."></textarea>
+                    </div>
+
+                    <!-- Vorbericht -->
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                        <h2 id="ui-sec-prev-rep" class="text-md font-bold text-slate-800 mb-1 border-b pb-2 flex items-center gap-2">
+                            <i data-lucide="history" class="w-4 h-4 text-indigo-600"></i> Vorbericht(e)
+                        </h2>
+                        <p id="ui-sub-prev-rep" class="text-xs text-slate-400 mb-2 mt-2">Erkenntnisse aus früheren Klinikaufenthalten / Vorbehandlungen</p>
+                        <textarea id="field-vorbericht" class="w-full p-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="z. B. Bereits im Vorjahr stationär behandelt, Fortschritte im Bereich Tonusregulation erzielt..."></textarea>
+                    </div>
 
                     <!-- Zielformulierung -->
                     <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
@@ -210,6 +258,13 @@
                                 <textarea id="field-grobmotorik" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm" placeholder="Koordination, Gleichgewicht, Tonus..."></textarea>
                             </div>
                         </div>
+
+                        <div>
+                            <label id="ui-lbl-fine-motor" class="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+                                <i data-lucide="pen-tool" class="w-3.5 h-3.5 text-indigo-500"></i> Feinmotorik & Grafomotorik
+                            </label>
+                            <textarea id="field-feinmotorik" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm" placeholder="Stifthaltung, Greifformen, Schneiden, Geschicklichkeit..."></textarea>
+                        </div>
                     </div>
 
                     <!-- Verlauf & Verhalten -->
@@ -253,19 +308,35 @@
                             </button>
                         </div>
 
-                        <div id="loading-spinner" class="hidden my-8 text-center">
-                            <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-600 border-t-transparent"></div>
-                            <p class="text-xs text-slate-500 mt-2 font-medium"><span id="ui-loading-text">KI formuliert den Bericht...</span> (<span id="timer-count">0</span>s)</p>
+                        <!-- Status & Stoppuhr Info-Zeile -->
+                        <div class="flex justify-between items-center text-xs text-slate-500 my-2 px-1">
+                            <div id="loading-spinner" class="hidden flex items-center gap-1.5 font-medium text-indigo-600">
+                                <div class="inline-block animate-spin rounded-full h-3.5 w-3.5 border-2 border-indigo-600 border-t-transparent"></div>
+                                <span id="ui-loading-text">KI formuliert den Bericht...</span>
+                            </div>
+                            <div id="timer-display" class="font-mono text-slate-400">
+                                <span id="ui-time-label">Dauer</span>: <strong id="timer-count">0</strong>s
+                            </div>
                         </div>
 
                         <div id="error-box" class="hidden p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg mb-3"></div>
 
-                        <textarea id="preview-text" class="w-full border border-slate-300 rounded-lg p-4 text-sm font-serif h-[480px] leading-relaxed focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Hier erscheint der generierte Bericht..."></textarea>
+                        <textarea id="preview-text" oninput="updateWordCount()" class="w-full border border-slate-300 rounded-lg p-4 text-sm font-serif h-[440px] leading-relaxed focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Hier erscheint der generierte Bericht..."></textarea>
 
-                        <!-- Generieren-Button -->
-                        <button id="generate-btn" onclick="generateReport()" class="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-md transition flex justify-center items-center gap-2 text-base">
-                            <i data-lucide="sparkles" class="w-5 h-5"></i> <span id="ui-btn-gen">Ergo-Bericht generieren</span>
-                        </button>
+                        <!-- Wortzähler direkt linksbündig unter dem Berichtsfeld -->
+                        <div class="text-xs text-slate-400 mt-1.5 px-1 flex items-center gap-1.5">
+                            <span id="ui-words-label">Wörter im Bericht</span>: <strong id="word-count" class="text-slate-700">0</strong>
+                        </div>
+
+                        <!-- Generieren & Abbrechen Buttons nebeneinander -->
+                        <div class="grid grid-cols-2 gap-3 mt-4">
+                            <button id="generate-btn" onclick="generateReport()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-md transition flex justify-center items-center gap-2 text-sm">
+                                <i data-lucide="sparkles" class="w-4 h-4"></i> <span id="ui-btn-gen">Bericht generieren</span>
+                            </button>
+                            <button id="cancel-btn" onclick="cancelGeneration()" disabled class="bg-slate-200 text-slate-400 font-semibold py-3.5 rounded-xl shadow-sm transition flex justify-center items-center gap-2 text-sm cursor-not-allowed">
+                                <i data-lucide="x-circle" class="w-4 h-4"></i> <span id="ui-btn-cancel">Abbrechen</span>
+                            </button>
+                        </div>
 
                         <button onclick="exportToWord()" class="w-full mt-3 bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 rounded-lg shadow transition flex justify-center items-center gap-2 text-sm">
                             <i data-lucide="download" class="w-4 h-4"></i> <span id="ui-btn-docx">als Word-Datei (.docx) herunterladen</span>
@@ -278,7 +349,7 @@
         </main>
     </div>
 
-    <!-- Urheber-Footer -->
+    <!-- Urheber-Footer (Ohne Versionsnummer) -->
     <footer class="mt-16 py-6 bg-slate-900 text-slate-200 border-t border-slate-800 text-center text-xs">
         <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-2">
             <p id="ui-footer-left">&copy; 2026 ErgoGen &middot; Klinik Edition</p>
@@ -294,8 +365,9 @@
         let secondsElapsed = 0;
         let currentStatusType = 'locked';
         let demoIndex = 0;
+        let abortController = null;
 
-        // Sprachübersetzungen inklusive nativem System-Prompt pro Sprache
+        // Sprachübersetzungen (inkl. Datenschutz-Pop-up-Text)
         const translations = {
             de: {
                 subtitle: "Pädiatrischer Berichtsgenerator",
@@ -319,16 +391,22 @@
                 advTitle: "Erweiterte KI-Einstellungen (Modell & Prompt)",
                 lblModel: "Gemini Modell-Bezeichnung",
                 lblPrompt: "System-Prompt (Anweisungen an die KI)",
-                systemPrompt: `Du bist eine erfahrene pädiatrische Ergotherapeutin in einer Fachklinik. Deine Aufgabe ist es, aus den eingegebenen Roh-Notizen einen zusammenhängenden, professionellen und flüssig formulierten Ergotherapie-Bericht zu verfassen.
+                systemPrompt: `Du bist eine erfahrene pädiatrische Ergotherapeutin in einer Fachklinik. Deine Aufgabe ist es, aus den eingegebenen Roh-Notizen (inklusive Eingangsdiagnose und Vorberichten) einen zusammenhängenden, professionellen und flüssig formulierten Ergotherapie-Bericht zu verfassen.
 
 STRENGSTE REGELN FÜR DIE FORMATIERUNG:
 - Verwende ABSOLUT KEINE Markdown-Sonderzeichen wie Sternchen (**), Rauten (###), Unterstriche (_) oder Aufzählungszeichen.
 - Schreibe ausschließlich in sauber gliederten, fließenden Fließtext-Absätzen.
 - Nutze zur Anonymisierung stets Platzhalter wie [das Kind] oder [der Patient] - niemals reale Namen.`,
-                draftLabel: "Sitzungs-Entwurf verwalten:",
-                btnSaveDraft: "Entwurf zwischenspeichern",
-                btnLoadDraft: "Entwurf laden",
-                draftHint: "Entwürfe werden ggf. im Download-Ordner des Browsers abgelegt und müssen nach Fertigstellung manuell gelöscht werden.",
+                draftLabel: "Sitzungseingaben verwalten:",
+                btnSaveDraft: "Eingaben zwischenspeichern",
+                btnLoadDraft: "Eingaben laden",
+                draftHint: "Daten werden gegebenenfalls im Downloadordner des Browsers abgelegt und müssen nach Fertigstellung manuell gelöscht werden.",
+                secDiagIn: "Eingangsdiagnose",
+                subDiagIn: "Vorhandene Diagnosen / ICD-Codes bei Klinikaufnahme",
+                diagInPlaceholder: "z. B. F82.0 Umschriebene Entwicklungsstörung der motorischen Funktionen...",
+                secPrevRep: "Vorbericht(e)",
+                subPrevRep: "Erkenntnisse aus früheren Klinikaufenthalten / Vorbehandlungen",
+                prevRepPlaceholder: "z. B. Bereits im Vorjahr stationär behandelt, Fortschritte im Bereich Tonusregulation erzielt...",
                 secGoal: "Zielformulierung",
                 subGoal: "Therapieziel (Vorgabe durch Eltern / Sorgeberechtigte)",
                 secDiag: "Befunderhebung (Diagnostik)",
@@ -336,22 +414,28 @@ STRENGSTE REGELN FÜR DIE FORMATIERUNG:
                 lblSens: "Sensorik & SI",
                 lblCog: "Kognitive Funktionen",
                 lblMotor: "Grobmotorik",
+                lblFineMotor: "Feinmotorik & Grafomotorik",
                 secCourse: "Verlauf & Verhalten",
                 subCourse: "Therapieverlauf & Verhalten des Kindes im Anwesenheitszeitraum",
                 secRec: "Empfehlung",
                 privacyHint: "<strong>Datenschutz:</strong> Bitte keine persönlichen Patientendaten oder Klarnamen eingeben!",
+                privacyConfirm: "⚠️ DATENSCHUTZ-HINWEIS:\n\nBitte vergewissere dich, dass keine persönlichen Patientendaten oder Klarnamen in den Feldern stehen.\n\nMöchtest du den Bericht jetzt generieren?",
                 secPrev: "Vorschau",
                 copyBtn: "Kopieren",
                 copySuccess: "Kopiert!",
                 editableTag: "Editierbar",
-                loadingText: "KI formuliert den Bericht...",
-                btnGen: "Ergo-Bericht generieren",
+                loadingText: "Generiere...",
+                timeLabel: "Dauer",
+                wordsLabel: "Wörter im Bericht",
+                btnGen: "Generieren",
+                btnCancel: "Abbrechen",
                 btnDocx: "als Word-Datei (.docx) herunterladen",
                 targetPlaceholder: "z. B. Verbesserung der Stifthaltung, selbstständiges Anziehen der Schuhe...",
                 percPlaceholder: "Visuell, auditiv, taktil-kinästhetisch...",
                 sensPlaceholder: "Sensorische Integration, Tiefensensibilität...",
                 cogPlaceholder: "Konzentration, Ausdauer, Handlungsplanung...",
                 motorPlaceholder: "Koordination, Gleichgewicht, Tonus...",
+                fineMotorPlaceholder: "Stifthaltung, Greifformen, Schneiden, Geschicklichkeit...",
                 coursePlaceholder: "Mitarbeit, Motivation, Belastbarkeit...",
                 recPlaceholder: "Empfehlungen für die weitere Therapie / Maßnahmen...",
                 previewPlaceholder: "Hier erscheint der generierte Bericht...",
@@ -359,10 +443,10 @@ STRENGSTE REGELN FÜR DIE FORMATIERUNG:
                 footerRight: "Entwickelt von <strong>Denis Riewe</strong> &middot; Alle Rechte vorbehalten.",
                 errNoKey: "Bitte trage deinen Google Gemini API-Schlüssel in den Einstellungen ein.",
                 errApi: "Fehler bei der KI-Generierung: ",
-                errNetwork: "Netzwerkfehler: ",
+                errNetwork: "Netzwerkfehler oder Generierung abgebrochen: ",
                 errNoText: "Kein Text zum Exportieren vorhanden!",
                 confirmMissingInputs: "Fehlende Eingaben - Bericht trotzdem generieren?",
-                errLoadDraft: "Fehler beim Laden des Entwurfs. Ungültiges Dateiformat."
+                errLoadDraft: "Fehler beim Laden der Eingaben. Ungültiges Dateiformat."
             },
             en: {
                 subtitle: "Pediatric Report Generator",
@@ -386,16 +470,22 @@ STRENGSTE REGELN FÜR DIE FORMATIERUNG:
                 advTitle: "Advanced AI Settings (Model & Prompt)",
                 lblModel: "Gemini Model Name",
                 lblPrompt: "System Prompt (AI Instructions)",
-                systemPrompt: `You are an experienced pediatric occupational therapist at a specialized clinic. Your task is to write a cohesive, professional, and fluently formulated occupational therapy report based on the raw notes provided.
+                systemPrompt: `You are an experienced pediatric occupational therapist at a specialized clinic. Your task is to write a cohesive, professional, and fluently formulated occupational therapy report based on the raw notes provided (including initial diagnosis and previous reports).
 
 STRICTEST FORMATTING RULES:
 - Use ABSOLUTELY NO Markdown special characters such as asterisks (**), hashes (###), underscores (_), or bullet points.
 - Write exclusively in cleanly structured, fluent paragraphs of running text.
 - Always use placeholders such as [the child] or [the patient] for anonymization - never use real names.`,
-                draftLabel: "Manage Session Draft:",
-                btnSaveDraft: "Save Draft",
-                btnLoadDraft: "Load Draft",
-                draftHint: "Drafts may be saved in the browser's download folder and must be deleted manually once completed.",
+                draftLabel: "Manage Session Inputs:",
+                btnSaveDraft: "Save Inputs",
+                btnLoadDraft: "Load Inputs",
+                draftHint: "Data may be saved in the browser's download folder and must be deleted manually once completed.",
+                secDiagIn: "Initial Diagnosis",
+                subDiagIn: "Existing diagnoses / ICD codes upon admission",
+                diagInPlaceholder: "e.g., F82.0 Specific developmental disorder of motor function...",
+                secPrevRep: "Previous Report(s)",
+                subPrevRep: "Findings from previous clinic stays or treatments",
+                prevRepPlaceholder: "e.g., Inpatient treatment last year, progress in tonus regulation...",
                 secGoal: "Goal Formulation",
                 subGoal: "Therapy Goal (Provided by parents / guardians)",
                 secDiag: "Diagnostic Findings",
@@ -403,22 +493,28 @@ STRICTEST FORMATTING RULES:
                 lblSens: "Sensory & SI",
                 lblCog: "Cognitive Functions",
                 lblMotor: "Gross Motor Skills",
+                lblFineMotor: "Fine Motor Skills",
                 secCourse: "Course & Behavior",
                 subCourse: "Therapy progress and child's behavior during treatment",
                 secRec: "Recommendation",
                 privacyHint: "<strong>Privacy:</strong> Please do not enter personal patient data or real names!",
+                privacyConfirm: "⚠️ PRIVACY NOTICE:\n\nPlease ensure no personal patient data or real names are entered.\n\nDo you want to generate the report now?",
                 secPrev: "Preview",
                 copyBtn: "Copy",
                 copySuccess: "Copied!",
                 editableTag: "Editable",
-                loadingText: "AI is formulating the report...",
-                btnGen: "Generate Ergo Report",
+                loadingText: "Generating...",
+                timeLabel: "Duration",
+                wordsLabel: "Words in report",
+                btnGen: "Generate",
+                btnCancel: "Cancel",
                 btnDocx: "Download as Word (.docx)",
                 targetPlaceholder: "e.g., improving pencil grip, independent dressing...",
                 percPlaceholder: "Visual, auditory, tactile-kinesthetic...",
                 sensPlaceholder: "Sensory integration, proprioception...",
                 cogPlaceholder: "Concentration, endurance, action planning...",
                 motorPlaceholder: "Coordination, balance, tone...",
+                fineMotorPlaceholder: "Pencil grip, grasping, cutting, dexterity...",
                 coursePlaceholder: "Cooperation, motivation, resilience...",
                 recPlaceholder: "Recommendations for further therapy / measures...",
                 previewPlaceholder: "The generated report will appear here...",
@@ -426,10 +522,10 @@ STRICTEST FORMATTING RULES:
                 footerRight: "Developed by <strong>Denis Riewe</strong> &middot; All rights reserved.",
                 errNoKey: "Please enter your Google Gemini API key in the settings.",
                 errApi: "AI generation error: ",
-                errNetwork: "Network error: ",
+                errNetwork: "Network error or generation cancelled: ",
                 errNoText: "No text available for export!",
                 confirmMissingInputs: "Missing inputs - generate report anyway?",
-                errLoadDraft: "Error loading draft. Invalid file format."
+                errLoadDraft: "Error loading inputs. Invalid file format."
             },
             fr: {
                 subtitle: "Générateur de rapports pédiatriques",
@@ -453,16 +549,22 @@ STRICTEST FORMATTING RULES:
                 advTitle: "Paramètres IA avancés (Modèle & Prompt)",
                 lblModel: "Nom du modèle Gemini",
                 lblPrompt: "Prompt Système (Instructions à l'IA)",
-                systemPrompt: `Vous êtes une ergothérapeute pédiatrique expérimentée dans une clinique spécialisée. Votre tâche est de rédiger un rapport d'ergothérapie cohérent, professionnel et fluide à partir des notes brutes fournies.
+                systemPrompt: `Vous êtes une ergothérapeute pédiatrique expérimentée dans une clinique spécialisée. Votre tâche est de rédiger un rapport d'ergothérapie cohérent, professionnel et fluide à partir des notes brutes fournies (y compris le diagnostic initial et les rapports précédents).
 
 RÈGLES DE FORMATAGE LES PLUS STRICTES :
 - N'utilisez ABSOLUTEMENT AUCUN caractère spécial Markdown tel que des astérisques (**), dièses (###), soulignés (_) ou puces.
 - Rédigez exclusivement sous forme de paragraphes de texte courant, clairement structurés et fluides.
 - Utilisez toujours des espaces réservés tels que [l'enfant] ou [le patient] pour l'anonymisation - jamais de vrais noms.`,
-                draftLabel: "Gérer le brouillon :",
-                btnSaveDraft: "Sauvegarder le brouillon",
-                btnLoadDraft: "Charger le brouillon",
-                draftHint: "Les brouillons peuvent être enregistrés dans le dossier de téléchargement du navigateur et doivent être supprimés manuellement une fois terminés.",
+                draftLabel: "Gérer les entrées :",
+                btnSaveDraft: "Sauvegarder les entrées",
+                btnLoadDraft: "Charger les entrées",
+                draftHint: "Les données peuvent être enregistrées dans le dossier de téléchargement du navigateur et doivent être supprimées manuellement une fois terminées.",
+                secDiagIn: "Diagnostic d'entrée",
+                subDiagIn: "Diagnostics existants / codes CIM à l'admission",
+                diagInPlaceholder: "ex. F82.0 Trouble spécifique du développement de la motricité...",
+                secPrevRep: "Rapport(s) antérieur(s)",
+                subPrevRep: "Résultats de séjours cliniques antérieurs ou de traitements",
+                prevRepPlaceholder: "ex. Traitement hospitalier l'année dernière, progrès dans la régulation du tonus...",
                 secGoal: "Formulation de l'objectif",
                 subGoal: "Objectif thérapeutique (Fourni par les parents)",
                 secDiag: "Bilan diagnostique",
@@ -470,22 +572,28 @@ RÈGLES DE FORMATAGE LES PLUS STRICTES :
                 lblSens: "Sensorielles & IS",
                 lblCog: "Fonctions cognitives",
                 lblMotor: "Motricité globale",
+                lblFineMotor: "Motricité fine",
                 secCourse: "Évolution & Comportement",
                 subCourse: "Progrès de la thérapie et comportement de l'enfant",
                 secRec: "Recommandations",
                 privacyHint: "<strong>Confidentialité :</strong> Ne saisissez pas de données personnelles de patients !",
+                privacyConfirm: "⚠️ AVIS DE CONFIDENTIALITÉ :\n\nVeuillez vous assurer qu'aucune donnée personnelle ou nom réel n'est saisi.\n\nVoulez-vous générer le rapport maintenant ?",
                 secPrev: "Aperçu",
                 copyBtn: "Copier",
                 copySuccess: "Copié !",
                 editableTag: "Modifiable",
-                loadingText: "L'IA rédige le rapport...",
-                btnGen: "Générer le rapport",
+                loadingText: "Génération...",
+                timeLabel: "Durée",
+                wordsLabel: "Mots dans le rapport",
+                btnGen: "Générer",
+                btnCancel: "Annuler",
                 btnDocx: "Télécharger en Word (.docx)",
                 targetPlaceholder: "ex. amélioration de la préhension, autonomie pour s'habiller...",
                 percPlaceholder: "Visuelle, auditive, tactile...",
                 sensPlaceholder: "Intégration sensorielle, proprioception...",
                 cogPlaceholder: "Concentration, endurance, planification...",
                 motorPlaceholder: "Coordination, équilibre, tonus...",
+                fineMotorPlaceholder: "Préhension, découpage, dextérité...",
                 coursePlaceholder: "Coopération, motivation, endurance...",
                 recPlaceholder: "Recommandations pour la suite de la thérapie...",
                 previewPlaceholder: "Le rapport généré apparaîtra ici...",
@@ -493,10 +601,10 @@ RÈGLES DE FORMATAGE LES PLUS STRICTES :
                 footerRight: "Développé par <strong>Denis Riewe</strong> &middot; Tous droits réservés.",
                 errNoKey: "Veuillez entrer votre clé API Google Gemini dans les paramètres.",
                 errApi: "Erreur de génération IA : ",
-                errNetwork: "Erreur réseau : ",
+                errNetwork: "Erreur réseau ou génération annulée : ",
                 errNoText: "Aucun texte à exporter !",
                 confirmMissingInputs: "Données manquantes - générer le rapport quand même ?",
-                errLoadDraft: "Erreur lors du chargement du brouillon. Format invalide."
+                errLoadDraft: "Erreur lors du chargement des entrées. Format invalide."
             },
             es: {
                 subtitle: "Generador de informes pediátricos",
@@ -520,16 +628,22 @@ RÈGLES DE FORMATAGE LES PLUS STRICTES :
                 advTitle: "Configuración avanzada de IA (Modelo y Prompt)",
                 lblModel: "Nombre del modelo Gemini",
                 lblPrompt: "Prompt del sistema (Instrucciones para la IA)",
-                systemPrompt: `Eres una terapeuta ocupacional pediátrica experimentada en una clínica especializada. Tu tarea es redactar un informe de terapia ocupacional coherente, profesional y fluido basado en las notas en bruto proporcionadas.
+                systemPrompt: `Eres una terapeuta ocupacional pediátrica experimentada en una clínica especializada. Tu tarea es redactar un informe de terapia ocupacional coherente, profesional y fluido basado en las notas en bruto proporcionadas (incluyendo el diagnóstico de ingreso y los informes anteriores).
 
 REGLAS DE FORMATO MÁS ESTRICTAS:
 - No utilices ABSOLUTAMENTE NINGÚN carácter especial de Markdown como asteriscos (**), almohadillas (###), guiones bajos (_) o viñetas.
 - Escribe exclusivamente en párrafos de texto continuo, claramente estructurados y fluidos.
 - Utiliza siempre marcadores de posición como [el niño] o [el paciente] para la anonimización, nunca nombres reales.`,
-                draftLabel: "Gestionar borrador:",
-                btnSaveDraft: "Guardar borrador",
-                btnLoadDraft: "Cargar borrador",
-                draftHint: "Los borradores pueden guardarse en la carpeta de descargas del navegador y deben eliminarse manualmente al finalizar.",
+                draftLabel: "Gestionar entradas:",
+                btnSaveDraft: "Guardar entradas",
+                btnLoadDraft: "Cargar entradas",
+                draftHint: "Los datos pueden guardarse en la carpeta de descargas del navegador y deben eliminarse manualmente al finalizar.",
+                secDiagIn: "Diagnóstico de ingreso",
+                subDiagIn: "Diagnósticos existentes / códigos CIE al ingreso",
+                diagInPlaceholder: "ej. F82.0 Trastorno específico del desarrollo de la función motora...",
+                secPrevRep: "Informe(s) anterior(es)",
+                subPrevRep: "Hallazgos de estancias clínicas o tratamientos anteriores",
+                prevRepPlaceholder: "ej. Tratamiento hospitalario el año pasado, progreso en la regulación del tono...",
                 secGoal: "Formulación de objetivos",
                 subGoal: "Objetivo terapéutico (Proporcionado por los padres)",
                 secDiag: "Evaluación diagnóstica",
@@ -537,151 +651,97 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
                 lblSens: "Sensorial e IS",
                 lblCog: "Funciones cognitivas",
                 lblMotor: "Motricidad gruesa",
+                lblFineMotor: "Motricidad fina",
                 secCourse: "Evolución y comportamiento",
                 subCourse: "Progreso de la terapia y comportamiento del niño",
                 secRec: "Recomendaciones",
                 privacyHint: "<strong>Privacidad:</strong> ¡No introduzca datos personales de pacientes!",
+                privacyConfirm: "⚠️ AVISO DE PRIVACIDAD:\n\nAsegúrese de que no se introduzcan datos personales ni nombres reales.\n\n¿Desea generar el informe ahora?",
                 secPrev: "Vista previa",
                 copyBtn: "Copiar",
                 copySuccess: "¡Copiado!",
                 editableTag: "Editable",
-                loadingText: "La IA está redactando el informe...",
-                btnGen: "Generar informe",
+                loadingText: "Generando...",
+                timeLabel: "Duración",
+                wordsLabel: "Palabras en el informe",
+                btnGen: "Generar",
+                btnCancel: "Cancelar",
                 btnDocx: "Descargar en Word (.docx)",
                 targetPlaceholder: "ej. mejora en el agarre del lápiz, vestirse solo...",
                 percPlaceholder: "Visual, auditiva, táctil...",
-                sensPlaceholder: "Integración sensorial, propiocepción...",
+                sensPlaceholder: "Integración sensorial, propriocepción...",
                 cogPlaceholder: "Concentración, resistencia, planificación...",
                 motorPlaceholder: "Coordinación, equilibrio, tono...",
+                fineMotorPlaceholder: "Agarre del lápiz, recorte, destreza...",
                 coursePlaceholder: "Cooperación, motivación, resistencia...",
-                recPlaceholder: "Recomendaciones para el tratamiento posterior...",
+                recPlaceholder: "Recomendaciones para le tratamiento posterior...",
                 previewPlaceholder: "El informe generado aparecerá aquí...",
                 footerLeft: "&copy; 2026 ErgoGen &middot; Edición Clínica",
                 footerRight: "Desarrollado por <strong>Denis Riewe</strong> &middot; Todos los derechos reservados.",
                 errNoKey: "Por favor, introduzca su clave API de Google Gemini en la configuración.",
                 errApi: "Error de generación de IA: ",
-                errNetwork: "Error de red: ",
+                errNetwork: "Error de red o generación cancelada: ",
                 errNoText: "¡No hay texto disponible para exportar!",
                 confirmMissingInputs: "Faltan datos - ¿generar informe de todos modos?",
-                errLoadDraft: "Error al cargar el borrador. Formato no válido."
+                errLoadDraft: "Error al cargar las entradas. Formato no válido."
             }
         };
 
         const demoDatasets = {
             de: [
                 {
+                    eingangsdiagnose: "F82.0 Umschriebene Entwicklungsstörung der motorischen Funktionen",
+                    vorbericht: "Bereits vor 12 Monaten stationär behandelt. Damals deutliche Hypotonie und Defizite in der Grobmotorik.",
                     ziel: "Verbesserung der Fein- und Grafomotorik für ein flüssiges Schriftbild in der Schule. Stärkung der Frustrationstoleranz.",
                     wahrnehmung: "Visuelle Wahrnehmung unauffällig. Figur-Grund-Differenzierung zeigt leichte Unsicherheiten bei komplexen Suchbildern.",
                     sensorik: "Taktil-propriozeptive Reizverarbeitung leicht verlangsamt. Zeigt vermindertes Spürbewusstsein in den Händen.",
                     kognition: "Aufmerksamkeitsspanne bei ca. 10-12 Minuten. Rasch ablenkbar durch Umweltreize. Handlungsplanung strukturiert, aber langsam.",
                     grobmotorik: "Gleichgewichtstests altersgemäß. Verkrampfte Schultergürtelmuskulatur bei feingewandten Tätigkeiten.",
+                    feinmotorik: "Stifthaltung verkrampft im Faustgriff. Schneiden mit der Schere unpräzise.",
                     verlauf: "Das Kind war stets hochmotiviert und freundlich. Zeigte Fortschritte im Umgang mit Stiftdruck, ermüdet jedoch nach 15 Minuten stark.",
                     empfehlung: "Fortführung der Ergotherapie empfohlen (10 Einheiten Motorik-Funktionstraining). Weiterhin Übungen zur Stärkung der Händigkeit."
-                },
-                {
-                    ziel: "Förderung der Grobmotorik, Rumpfstabilität und Ballkoordination beim Werfen und Fangen im Sportunterricht.",
-                    wahrnehmung: "Visuell-räumliche Orientierung leicht beeinträchtigt, besonders bei Flugbahneinschätzungen von Bällen.",
-                    sensorik: "Gleichgewichtssystem (vestibulär) reagiert übersensibel auf Drehbewegungen und Schaukeln.",
-                    kognition: "Gute Ausdauer bei strukturierten Einzelspielen. Schwierigkeiten bei schnellen Regelwechseln in der Gruppe.",
-                    grobmotorik: "Erhöhter Tonus im Schulter- und Nackenbereich. Unsicherheiten beim Einbeinstand und Hüpfen.",
-                    verlauf: "Freudige Mitarbeit bei Parcours-Übungen. Zeigt zunehmend Mut bei neuen Herausforderungen.",
-                    empfehlung: "Psychomotorische Gruppe sowie Gleichgewichtstraining zu Hause (z. B. Kreiselbrett)."
-                },
-                {
-                    ziel: "Reduktion der taktilen Abwehr und Steigerung der Selbstständigkeit bei alltäglichen Handlungsabläufen.",
-                    wahrnehmung: "Auditive Filterfunktion eingeschränkt; reagiert empfindlich auf laute Nebengeräusche.",
-                    sensorik: "Ausgeprägte taktile Überempfindlichkeit an den Händen und im Gesichtsbereich (Berührungsängste).",
-                    kognition: "Benötigt klare visuelle Strukturen und Vorhersehbarkeit, um handlungsfähig zu bleiben.",
-                    grobmotorik: "Allgemeine Bewegungsunsicherheit auf unebenem Untergrund.",
-                    verlauf: "Schrittweise Annäherung an verschiedene Materialien (Knete, Sand) war erfolgreich. Weniger Vermeidungshaltungen.",
-                    empfehlung: "Sensorische Integrationstherapie 1x wöchentlich sowie Einbindung von Bürstungen im häuslichen Alltag."
                 }
             ],
             en: [
                 {
+                    eingangsdiagnose: "F82.0 Specific developmental disorder of motor function",
+                    vorbericht: "Inpatient treatment 12 months ago. At that time pronounced hypotonia and gross motor deficits.",
                     ziel: "Improving fine and graphomotor skills for fluid handwriting at school. Strengthening frustration tolerance.",
                     wahrnehmung: "Visual perception unremarkable. Figure-ground differentiation shows minor difficulties with complex visual searches.",
                     sensorik: "Tactile-proprioceptive processing slightly slowed. Shows reduced tactile awareness in the hands.",
                     kognition: "Attention span approx. 10-12 minutes. Easily distracted by environmental stimuli. Action planning structured but slow.",
                     grobmotorik: "Balance tests age-appropriate. Tense shoulder girdle muscles during fine motor tasks.",
+                    feinmotorik: "Pencil grip tense in fist grasp. Scissor cutting imprecise.",
                     verlauf: "The child was consistently highly motivated and friendly. Showed progress in pencil pressure regulation, but tires quickly after 15 minutes.",
                     empfehlung: "Continuation of occupational therapy recommended (10 sessions motor function training). Continued exercises to strengthen hand dominance."
-                },
-                {
-                    ziel: "Promoting gross motor skills, core stability, and ball coordination during sports.",
-                    wahrnehmung: "Visuospatial orientation slightly impaired, especially when judging ball trajectories.",
-                    sensorik: "Vestibular system reacts hypersensitively to rotational movements and swinging.",
-                    kognition: "Good endurance during structured individual games. Difficulty with rapid rule changes in group settings.",
-                    grobmotorik: "Increased muscle tone in shoulders and neck. Instability during single-leg stance and hopping.",
-                    verlauf: "Enthusiastic participation in obstacle courses. Shows growing courage with new physical challenges.",
-                    empfehlung: "Psychomotor group training and balance exercises at home (e.g., balance board)."
-                },
-                {
-                    ziel: "Reduction of tactile defensiveness and increase in independence during daily routines.",
-                    wahrnehmung: "Auditory filtering impaired; sensitive to loud background noises.",
-                    sensorik: "Pronounced tactile hypersensitivity on hands and face (reluctance to touch certain textures).",
-                    kognition: "Requires clear visual structures and predictability to remain focused.",
-                    grobmotorik: "General motor insecurity on uneven surfaces.",
-                    verlauf: "Gradual exposure to various textures (clay, sand) was successful. Decreased avoidance behavior.",
-                    empfehlung: "Sensory integration therapy once weekly and integration of tactile input techniques at home."
                 }
             ],
             fr: [
                 {
+                    eingangsdiagnose: "F82.0 Trouble spécifique du développement de la motricité",
+                    vorbericht: "Traité en hospitalisation il y a 12 mois. Hypotonie prononcée à l'époque.",
                     ziel: "Amélioration de la motricité fine et graphomotrice pour une écriture fluide. Renforcement de la tolérance à la frustration.",
                     wahrnehmung: "Perception visuelle normale. Légères difficultés de différenciation figure-fond sur des images complexes.",
                     sensorik: "Traitement tactile et proprioceptif légèrement ralenti. Conscience tactile réduite dans les mains.",
                     kognition: "Attention d'environ 10-12 minutes. Facilement distractible. Planification motrice structurée mais lente.",
                     grobmotorik: "Équilibre adapté à l'âge. Tensions musculaires au niveau des épaules lors des tâches fines.",
+                    feinmotorik: "Préhension crispée en poing. Découpage imprécis.",
                     verlauf: "L'enfant a été très motivé et coopératif. Progrès dans la gestion de la pression du crayon, mais fatigue rapide après 15 minutes.",
                     empfehlung: "Poursuite de l'ergothérapie recommandée (10 séances). Exercices continus pour la latéralité."
-                },
-                {
-                    ziel: "Développement de la motricité globale, de la stabilité du tronc et de la coordination visuomotrice.",
-                    wahrnehmung: "Orientation visuo-spatiale légèrement altérée lors du suivi de trajectoires de balles.",
-                    sensorik: "Hypersensibilité vestibulaire aux mouvements rotatifs et balancements.",
-                    kognition: "Bonne endurance en individuel. Difficultés lors des changements rapides de règles en groupe.",
-                    grobmotorik: "Tonus accru dans la ceinture scapulaire. Instabilité sur un pied.",
-                    verlauf: "Participation enthousiaste aux parcours moteurs. Confiance accrue face aux nouveaux défis.",
-                    empfehlung: "Séances de psychomotricité et exercices d'équilibre à domicile."
-                },
-                {
-                    ziel: "Réduction de l'hyperréactivité tactile et autonomie accrue dans les gestes de la vie quotidienne.",
-                    wahrnehmung: "Filtrage auditif altéré ; sensibilité aux bruits de fond.",
-                    sensorik: "Hypersensibilité tactile marquée sur les mains et le visage (évitement de certaines textures).",
-                    kognition: "Besoin de repères visuels clairs et de prévisibilité.",
-                    grobmotorik: "Insécurité motrice sur sols inégaux.",
-                    verlauf: "Exposition progressive aux textures (sable, pâte à modeler) réussie. Diminution des comportements d'évitement.",
-                    empfehlung: "Thérapie d'intégration sensorielle hebdomadaire."
                 }
             ],
             es: [
                 {
+                    eingangsdiagnose: "F82.0 Trastorno específico del desarrollo de la función motora",
+                    vorbericht: "Tratamiento hospitalario hace 12 meses. En ese momento hipotonía pronunciada.",
                     ziel: "Mejora de la motricidad fina y grafomotricidad para una escritura fluida. Fortalecimiento de la tolerancia a la frustración.",
                     wahrnehmung: "Percepción visual adecuada. Ligeras dificultades en discriminación figura-fondo.",
                     sensorik: "Procesamiento táctil-propioceptivo ligeramente ralentizado. Conciencia táctil disminuida en las manos.",
                     kognition: "Atención de 10-12 minutos. Distraído fácilmente por estímulos externos. Planificación motora lenta.",
                     grobmotorik: "Equilibrio adecuado a su edad. Tensión en cintura escapular durante tareas finas.",
+                    feinmotorik: "Agarre del lápiz tenso en puño. Recorte impreciso.",
                     verlauf: "El niño mostró alta motivación y colaboración. Progreso en la presión del lápiz, aunque se fatiga tras 15 minutos.",
                     empfehlung: "Continuación de terapia ocupacional recomendada (10 sesiones). Ejercicios de fortalecimiento manual."
-                },
-                {
-                    ziel: "Promoción de la motricidad gruesa, estabilidad de tronco y coordinación óculo-manual.",
-                    wahrnehmung: "Orientación visoespacial ligeramente afectada al calcular trayectorias de objetos.",
-                    sensorik: "Sistema vestibular hipersensible a movimientos rotatorios.",
-                    kognition: "Buena resistencia en juegos individuales. Dificultades con cambios rápidos de reglas grupales.",
-                    grobmotorik: "Tono muscular elevado en hombros y cuello. Inestabilidad en apoyo monopodal.",
-                    verlauf: "Participación entusiasta en circuitos motores. Mayor valentía ante nuevos retos físicos.",
-                    empfehlung: "Grupo de psicomotricidad y ejercicios de equilibrio en casa."
-                },
-                {
-                    ziel: "Reducción de la defensividad táctil y mayor independencia en actividades cotidianas.",
-                    wahrnehmung: "Filtrado auditivo limitado; sensibilidad a ruidos ambientales fuertes.",
-                    sensorik: "Hipersensibilidad táctil pronunciada en manos y cara (rechazo a ciertas texturas).",
-                    kognition: "Requiere estructuras visuales claras y predictibilidad.",
-                    grobmotorik: "Inseguridad motriz general en superficies irregulares.",
-                    verlauf: "Exposición gradual a texturas (arena, plastilina) exitosa. Menores conductas de evitación.",
-                    empfehlung: "Terapia de integración sensorial semanal."
                 }
             ]
         };
@@ -703,6 +763,19 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
                 statusTextSpan.innerText = t.statusActive;
                 badge.className = "px-3 py-1 text-xs font-semibold rounded-full bg-emerald-500 text-white flex items-center gap-1.5";
             }
+        }
+
+        function toggleDarkMode() {
+            let root = document.getElementById('html-root');
+            let icon = document.getElementById('dark-mode-icon');
+            root.classList.toggle('dark-mode');
+            
+            if (root.classList.contains('dark-mode')) {
+                icon.setAttribute('data-lucide', 'sun');
+            } else {
+                icon.setAttribute('data-lucide', 'moon');
+            }
+            lucide.createIcons();
         }
 
         function changeLanguage() {
@@ -740,6 +813,14 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
             document.getElementById('ui-btn-load-draft').innerText = t.btnLoadDraft;
             document.getElementById('ui-draft-hint').innerText = t.draftHint;
 
+            document.getElementById('ui-sec-diag-in').innerHTML = `<i data-lucide="clipboard-plus" class="w-4 h-4 text-indigo-600"></i> ${t.secDiagIn}`;
+            document.getElementById('ui-sub-diag-in').innerText = t.subDiagIn;
+            document.getElementById('field-eingangsdiagnose').placeholder = t.diagInPlaceholder;
+
+            document.getElementById('ui-sec-prev-rep').innerHTML = `<i data-lucide="history" class="w-4 h-4 text-indigo-600"></i> ${t.secPrevRep}`;
+            document.getElementById('ui-sub-prev-rep').innerText = t.subPrevRep;
+            document.getElementById('field-vorbericht').placeholder = t.prevRepPlaceholder;
+
             document.getElementById('ui-sec-goal').innerHTML = `<i data-lucide="target" class="w-4 h-4 text-indigo-600"></i> ${t.secGoal}`;
             document.getElementById('ui-sub-goal').innerText = t.subGoal;
             document.getElementById('field-ziel').placeholder = t.targetPlaceholder;
@@ -757,6 +838,9 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
             document.getElementById('ui-lbl-motor').innerHTML = `<i data-lucide="activity" class="w-3.5 h-3.5 text-indigo-500"></i> ${t.lblMotor}`;
             document.getElementById('field-grobmotorik').placeholder = t.motorPlaceholder;
 
+            document.getElementById('ui-lbl-fine-motor').innerHTML = `<i data-lucide="pen-tool" class="w-3.5 h-3.5 text-indigo-500"></i> ${t.lblFineMotor}`;
+            document.getElementById('field-feinmotorik').placeholder = t.fineMotorPlaceholder;
+
             document.getElementById('ui-sec-course').innerHTML = `<i data-lucide="trending-up" class="w-4 h-4 text-indigo-600"></i> ${t.secCourse}`;
             document.getElementById('ui-sub-course').innerText = t.subCourse;
             document.getElementById('field-verlauf').placeholder = t.coursePlaceholder;
@@ -770,9 +854,12 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
             document.getElementById('copy-btn-text').innerText = t.copyBtn;
             document.getElementById('ui-editable-tag').innerText = t.editableTag;
             document.getElementById('ui-loading-text').innerText = t.loadingText;
+            document.getElementById('ui-time-label').innerText = t.timeLabel;
+            document.getElementById('ui-words-label').innerText = t.wordsLabel;
             document.getElementById('preview-text').placeholder = t.previewPlaceholder;
 
             document.getElementById('ui-btn-gen').innerText = t.btnGen;
+            document.getElementById('ui-btn-cancel').innerText = t.btnCancel;
             document.getElementById('ui-btn-docx').innerText = t.btnDocx;
 
             document.getElementById('ui-footer-left').innerHTML = t.footerLeft;
@@ -781,14 +868,22 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
             lucide.createIcons();
         }
 
-        // Entwurf als Datei speichern (mit echtem Datei-Dialog & Firefox-Fallback)
+        function updateWordCount() {
+            let text = document.getElementById('preview-text').value.trim();
+            let words = text === '' ? 0 : text.split(/\s+/).length;
+            document.getElementById('word-count').innerText = words;
+        }
+
         async function saveDraftToFile() {
             let data = {
+                eingangsdiagnose: document.getElementById('field-eingangsdiagnose').value,
+                vorbericht: document.getElementById('field-vorbericht').value,
                 ziel: document.getElementById('field-ziel').value,
                 wahrnehmung: document.getElementById('field-wahrnehmung').value,
                 sensorik: document.getElementById('field-sensorik').value,
                 kognition: document.getElementById('field-kognition').value,
                 grobmotorik: document.getElementById('field-grobmotorik').value,
+                feinmotorik: document.getElementById('field-feinmotorik').value,
                 verlauf: document.getElementById('field-verlauf').value,
                 empfehlung: document.getElementById('field-empfehlung').value,
                 preview: document.getElementById('preview-text').value
@@ -834,7 +929,6 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
             window.URL.revokeObjectURL(url);
         }
 
-        // Entwurf aus Datei laden
         function loadDraftFromFile(event) {
             let file = event.target.files[0];
             let lang = document.getElementById('language-select').value;
@@ -845,14 +939,18 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
             reader.onload = function(e) {
                 try {
                     let data = JSON.parse(e.target.result);
+                    document.getElementById('field-eingangsdiagnose').value = data.eingangsdiagnose || '';
+                    document.getElementById('field-vorbericht').value = data.vorbericht || '';
                     document.getElementById('field-ziel').value = data.ziel || '';
                     document.getElementById('field-wahrnehmung').value = data.wahrnehmung || '';
                     document.getElementById('field-sensorik').value = data.sensorik || '';
                     document.getElementById('field-kognition').value = data.kognition || '';
                     document.getElementById('field-grobmotorik').value = data.grobmotorik || '';
+                    document.getElementById('field-feinmotorik').value = data.feinmotorik || '';
                     document.getElementById('field-verlauf').value = data.verlauf || '';
                     document.getElementById('field-empfehlung').value = data.empfehlung || '';
                     document.getElementById('preview-text').value = data.preview || '';
+                    updateWordCount();
                 } catch (err) {
                     alert(t.errLoadDraft);
                 }
@@ -908,6 +1006,7 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
             
             updateDailyCountUI();
             updateStatusUI('locked');
+            updateWordCount();
         };
 
         function getTodayString() {
@@ -952,48 +1051,70 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
             let data = list[demoIndex];
             demoIndex = (demoIndex + 1) % list.length;
 
+            document.getElementById('field-eingangsdiagnose').value = data.eingangsdiagnose;
+            document.getElementById('field-vorbericht').value = data.vorbericht;
             document.getElementById('field-ziel').value = data.ziel;
             document.getElementById('field-wahrnehmung').value = data.wahrnehmung;
             document.getElementById('field-sensorik').value = data.sensorik;
             document.getElementById('field-kognition').value = data.kognition;
             document.getElementById('field-grobmotorik').value = data.grobmotorik;
+            document.getElementById('field-feinmotorik').value = data.feinmotorik;
             document.getElementById('field-verlauf').value = data.verlauf;
             document.getElementById('field-empfehlung').value = data.empfehlung;
+            updateWordCount();
         }
 
         function clearData() {
+            document.getElementById('field-eingangsdiagnose').value = '';
+            document.getElementById('field-vorbericht').value = '';
             document.getElementById('field-ziel').value = '';
             document.getElementById('field-wahrnehmung').value = '';
             document.getElementById('field-sensorik').value = '';
             document.getElementById('field-kognition').value = '';
             document.getElementById('field-grobmotorik').value = '';
+            document.getElementById('field-feinmotorik').value = '';
             document.getElementById('field-verlauf').value = '';
             document.getElementById('field-empfehlung').value = '';
             document.getElementById('preview-text').value = '';
             document.getElementById('error-box').classList.add('hidden');
+            updateWordCount();
+        }
+
+        function cancelGeneration() {
+            if (abortController) {
+                abortController.abort();
+            }
         }
 
         async function generateReport() {
             let errorBox = document.getElementById('error-box');
             let genBtn = document.getElementById('generate-btn');
+            let cancelBtn = document.getElementById('cancel-btn');
             let previewTextarea = document.getElementById('preview-text');
             errorBox.classList.add('hidden');
 
             let selectedLang = document.getElementById('language-select').value;
             let t = translations[selectedLang] || translations.de;
 
+            let eingangsdiagnose = document.getElementById('field-eingangsdiagnose').value.trim();
+            let vorbericht = document.getElementById('field-vorbericht').value.trim();
             let ziel = document.getElementById('field-ziel').value.trim();
             let wahrnehmung = document.getElementById('field-wahrnehmung').value.trim();
             let sensorik = document.getElementById('field-sensorik').value.trim();
             let kognition = document.getElementById('field-kognition').value.trim();
             let grobmotorik = document.getElementById('field-grobmotorik').value.trim();
+            let feinmotorik = document.getElementById('field-feinmotorik').value.trim();
             let verlauf = document.getElementById('field-verlauf').value.trim();
             let empfehlung = document.getElementById('field-empfehlung').value.trim();
 
-            if (!ziel && !wahrnehmung && !sensorik && !kognition && !grobmotorik && !verlauf && !empfehlung) {
+            if (!eingangsdiagnose && !vorbericht && !ziel && !wahrnehmung && !sensorik && !kognition && !grobmotorik && !feinmotorik && !verlauf && !empfehlung) {
                 let proceed = confirm(t.confirmMissingInputs);
                 if (!proceed) return;
             }
+
+            // DATENSCHUTZ-POP-UP BEI JEDEM KLICK AUF GENERIEREN
+            let proceedPrivacy = confirm(t.privacyConfirm);
+            if (!proceedPrivacy) return;
 
             let apiKey = document.getElementById('api-key-input').value.trim();
             let selectedModel = document.getElementById('api-model-input').value.trim() || 'gemini-3.8-flash';
@@ -1006,17 +1127,26 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
                 return;
             }
 
+            // KONTINGENT / ZÄHLER SOFORT BEI ANFRAGE HOCHZÄHLEN
+            incrementDailyCount();
+
             let lengthSetting = document.getElementById('report-length').value;
             let toneSetting = document.getElementById('report-tone').value;
 
             let styleInstruction = `\n\nSTIL & DUKTUS:\n- Stil: ${toneSetting === 'arzt' ? 'Klinisch-medizinischer Fachjargon. Synthetisiere die Befunde zu einem geschlossenen Bild.' : 'Empathischer, klar strukturierter Bericht für Eltern und Pädagogen.'}\n- Umfang: ${lengthSetting === 'knapp' ? 'Prägnant und auf das Wesentliche fokussiert.' : lengthSetting === 'ausfuehrlich' ? 'Ausführliche, tiefgehende Ausformulierung mit allen Details.' : 'Standard-Umfang mit klarer Struktur.'}\n- Erfinde keine Fakten, sondern übersetze die Stichpunkte professionell.`;
 
-            let userNotes = `BEFUND-NOTIZEN:\n- Therapieziel: ${ziel}\n- Wahrnehmung: ${wahrnehmung}\n- Sensorik: ${sensorik}\n- Kognition: ${kognition}\n- Motorik: ${grobmotorik}\n- Verlauf: ${verlauf}\n- Empfehlung: ${empfehlung}`;
+            let userNotes = `BEFUND-NOTIZEN:\n- Eingangsdiagnose: ${eingangsdiagnose}\n- Vorbericht: ${vorbericht}\n- Therapieziel: ${ziel}\n- Wahrnehmung: ${wahrnehmung}\n- Sensorik: ${sensorik}\n- Kognition: ${kognition}\n- Grobmotorik: ${grobmotorik}\n- Feinmotorik: ${feinmotorik}\n- Verlauf: ${verlauf}\n- Empfehlung: ${empfehlung}`;
 
             document.getElementById('loading-spinner').classList.remove('hidden');
             previewTextarea.value = '';
+            updateWordCount();
+            
+            // Buttons umschalten (Generieren sperren, Abbrechen freigeben)
             genBtn.disabled = true;
             genBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            cancelBtn.disabled = false;
+            cancelBtn.classList.remove('bg-slate-200', 'text-slate-400', 'cursor-not-allowed');
+            cancelBtn.classList.add('bg-red-500', 'hover:bg-red-600', 'text-white');
 
             secondsElapsed = 0;
             document.getElementById('timer-count').innerText = secondsElapsed;
@@ -1026,10 +1156,13 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
                 document.getElementById('timer-count').innerText = secondsElapsed;
             }, 1000);
 
+            abortController = new AbortController();
+
             try {
                 let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:streamGenerateContent?alt=sse&key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    signal: abortController.signal,
                     body: JSON.stringify({
                         contents: [{
                             parts: [
@@ -1041,7 +1174,7 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
 
                 if (!response.ok) {
                     let errData = await response.json().catch(() => ({}));
-                    let errMessage = errData.error ? errData.error.message : "Fehler beim API-Aufruf (" + response.status + ")";
+                    let errMessage = errData.error ? errData.error.message : "Fehler beim API-Call (" + response.status + ")";
                     throw new Error(errMessage);
                 }
 
@@ -1072,6 +1205,7 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
                                     let cleanedText = accumulatedText.replace(/[*#_`]/g, '');
                                     previewTextarea.value = cleanedText;
                                     previewTextarea.scrollTop = previewTextarea.scrollHeight;
+                                    updateWordCount();
                                 }
                             } catch (e) {}
                         }
@@ -1079,17 +1213,25 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
                 }
 
                 updateStatusUI('active');
-                incrementDailyCount();
 
             } catch (err) {
-                errorBox.innerText = t.errNetwork + err.message;
+                if (err.name === 'AbortError') {
+                    errorBox.innerText = "Generierung durch Benutzer abgebrochen.";
+                } else {
+                    errorBox.innerText = t.errNetwork + err.message;
+                }
                 errorBox.classList.remove('hidden');
                 updateStatusUI('unlocked');
             } finally {
                 clearInterval(timerInterval);
                 document.getElementById('loading-spinner').classList.add('hidden');
+                
+                // Buttons zurücksetzen
                 genBtn.disabled = false;
                 genBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                cancelBtn.disabled = true;
+                cancelBtn.classList.remove('bg-red-500', 'hover:bg-red-600', 'text-white');
+                cancelBtn.classList.add('bg-slate-200', 'text-slate-400', 'cursor-not-allowed');
             }
         }
 
