@@ -11,7 +11,6 @@
     <script src="https://unpkg.com/docx@7.8.2/build/index.js"></script>
     <style>
         textarea { resize: vertical; min-height: 80px; }
-        /* Sanfter Dark Mode & Button-Anpassungen */
         .dark-mode { background-color: #0f172a !important; color: #f8fafc !important; }
         .dark-mode .bg-white { background-color: #1e293b !important; color: #f8fafc !important; border-color: #334155 !important; }
         .dark-mode .text-slate-800 { color: #f8fafc !important; }
@@ -25,13 +24,12 @@
         .dark-mode input::placeholder, .dark-mode textarea::placeholder { color: #64748b !important; }
         .dark-mode .border-slate-200, .dark-mode .border-slate-300, .dark-mode .border-slate-100 { border-color: #334155 !important; }
         .dark-mode .bg-amber-50 { background-color: #451a03 !important; border-color: #78350f !important; color: #fef3c7 !important; }
-        
-        /* Dark Mode für bisher helle Buttons */
         .dark-mode .bg-slate-200 { background-color: #334155 !important; color: #e2e8f0 !important; }
         .dark-mode .bg-slate-200:hover { background-color: #475569 !important; }
         .dark-mode .bg-indigo-50 { background-color: #1e1b4b !important; color: #c7d2fe !important; border-color: #312e81 !important; }
         .dark-mode .bg-indigo-50:hover { background-color: #312e81 !important; }
         .dark-mode .bg-slate-300 { background-color: #475569 !important; color: #cbd5e1 !important; }
+        .dark-mode .bg-indigo-50\/50 { background-color: #1e1b4b\/40 !important; border-color: #312e81 !important; }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col justify-between transition-colors duration-200">
@@ -147,14 +145,21 @@
                             <i id="advanced-chevron" data-lucide="chevron-right" class="w-4 h-4 transition-transform duration-200"></i>
                             <span id="ui-adv-title">Erweiterte KI-Einstellungen (Modell & Prompt)</span>
                         </button>
-                        <span class="text-[11px] font-mono font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">v2.0</span>
+                        <span class="text-[11px] font-mono font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">v2.6</span>
                     </div>
 
                     <div id="advanced-settings" class="hidden mt-3 p-4 bg-slate-50 rounded-lg border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <label id="ui-lbl-model" class="block text-xs font-semibold text-slate-600 mb-1">Gemini Modell-Bezeichnung</label>
-                            <input type="text" id="api-model-input" value="gemini-3.8-flash" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white font-mono text-slate-700">
-                            <p class="text-[10px] text-slate-400 mt-1">Standard: gemini-3.8-flash</p>
+                            <label id="ui-lbl-model" class="block text-xs font-semibold text-slate-600 mb-1">Gemini Modell-Auswahl</label>
+                            <select id="api-model-input" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white font-mono text-slate-700">
+                                <option value="auto" selected id="opt-m-auto">🔄 Automatisch (Intelligente Fallback-Kette)</option>
+                                <option value="gemini-3.8-flash" id="opt-m-38">gemini-3.8-flash (Standard / Flaggschiff)</option>
+                                <option value="gemini-3.6-flash" id="opt-m-36">gemini-3.6-flash (Stabiler Vorgänger)</option>
+                                <option value="gemini-3.5-flash-lite" id="opt-m-35l">gemini-3.5-flash-lite (Sehr schnell & zuverlässig)</option>
+                                <option value="gemini-3.1-flash-lite" id="opt-m-31l">gemini-3.1-flash-lite (Sicherheits-Fallback)</option>
+                                <option value="gemini-flash-latest" id="opt-m-latest">gemini-flash-latest (Generischer Alias)</option>
+                            </select>
+                            <p id="ui-model-hint" class="text-[10px] text-slate-400 mt-1">Wählt automatisch das beste stabile Modell oder erzwingt die manuelle Auswahl.</p>
                         </div>
                         <div class="md:col-span-2">
                             <label id="ui-lbl-prompt" class="block text-xs font-semibold text-slate-600 mb-1">System-Prompt (Anweisungen an die KI)</label>
@@ -183,7 +188,7 @@
                         </div>
                     </div>
                     <div>
-                        <p id="ui-draft-hint" class="text-[11px] text-slate-400 italic lg:text-right">Daten werden gegebenenfalls im Downloadordner des Browsers abgelegt und müssen nach Fertigstellung manuell gelöscht werden.</p>
+                        <p id="ui-draft-hint" class="text-[11px] text-slate-400 italic lg:text-right">Daten inklusive des angepassten System-Prompts werden im Downloadordner des Browsers abgelegt.</p>
                     </div>
                 </div>
             </div>
@@ -201,6 +206,17 @@
                         </h2>
                         <p id="ui-sub-diag-in" class="text-xs text-slate-400 mb-2 mt-2">Vorhandene Diagnosen / ICD-Codes bei Klinikaufnahme</p>
                         <textarea id="field-eingangsdiagnose" class="w-full p-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="z. B. F82.0 Umschriebene Entwicklungsstörung der motorischen Funktionen..."></textarea>
+                    </div>
+
+                    <!-- Ergotherapeutische Behandlungen während des Klinikaufenthalts -->
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                        <h2 id="ui-sec-treatments" class="text-md font-bold text-slate-800 mb-1 border-b pb-2 flex items-center gap-2">
+                            <i data-lucide="calendar-check" class="w-4 h-4 text-indigo-600"></i> Ergotherapeutische Behandlungen während des Klinikaufenthalts
+                        </h2>
+                        <div class="flex items-center gap-3 mt-3">
+                            <input type="number" id="field-behandlungen" min="0" max="999" placeholder="0" class="w-24 p-2.5 border border-slate-300 rounded-lg text-sm text-center font-bold font-mono focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50">
+                            <span id="ui-treatments-hint" class="text-xs text-slate-500 font-medium">Anzahl der Behandlungen als Ziffer einfügen</span>
+                        </div>
                     </div>
 
                     <!-- Vorbericht -->
@@ -321,10 +337,23 @@
 
                         <div id="error-box" class="hidden p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg mb-3"></div>
 
-                        <textarea id="preview-text" oninput="updateWordCount()" class="w-full border border-slate-300 rounded-lg p-4 text-sm font-serif h-[440px] leading-relaxed focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Hier erscheint der generierte Bericht..."></textarea>
+                        <textarea id="preview-text" oninput="updateWordCount()" class="w-full border border-slate-300 rounded-lg p-4 text-sm font-serif h-[380px] leading-relaxed focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Hier erscheint der generierte Bericht..."></textarea>
+
+                        <!-- Nachbearbeitungs-Leiste (Mit aktiver Stoppuhr & Abbrechbarkeit) -->
+                        <div class="mt-3 p-3 bg-indigo-50/50 border border-indigo-100 rounded-xl">
+                            <label id="ui-patch-label" class="block text-xs font-bold text-indigo-900 mb-1.5 flex items-center gap-1.5">
+                                <i data-lucide="wand-2" class="w-3.5 h-3.5 text-indigo-600"></i> Bericht nachträglich anpassen (KI-Patch)
+                            </label>
+                            <div class="flex gap-2">
+                                <input type="text" id="patch-input" placeholder="z. B. Den Tonus-Abschnitt etwas kürzen..." class="w-full p-2 border border-slate-300 rounded-lg text-xs bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
+                                <button onclick="patchReport()" id="patch-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-3 py-2 rounded-lg text-xs transition shrink-0 flex items-center gap-1">
+                                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> <span id="ui-btn-patch">Anpassen</span>
+                                </button>
+                            </div>
+                        </div>
 
                         <!-- Wortzähler direkt linksbündig unter dem Berichtsfeld -->
-                        <div class="text-xs text-slate-400 mt-1.5 px-1 flex items-center gap-1.5">
+                        <div class="text-xs text-slate-400 mt-2 px-1 flex items-center gap-1.5">
                             <span id="ui-words-label">Wörter im Bericht</span>: <strong id="word-count" class="text-slate-700">0</strong>
                         </div>
 
@@ -349,7 +378,7 @@
         </main>
     </div>
 
-    <!-- Urheber-Footer (Ohne Versionsnummer) -->
+    <!-- Urheber-Footer -->
     <footer class="mt-16 py-6 bg-slate-900 text-slate-200 border-t border-slate-800 text-center text-xs">
         <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-2">
             <p id="ui-footer-left">&copy; 2026 ErgoGen &middot; Klinik Edition</p>
@@ -358,7 +387,6 @@
     </footer>
 
     <script>
-        // Verschlüsselte PIN (entspricht "75328")
         const CORRECT_PIN_HASH = "52423195";
 
         let timerInterval = null;
@@ -367,7 +395,6 @@
         let demoIndex = 0;
         let abortController = null;
 
-        // Sprachübersetzungen (inkl. Datenschutz-Pop-up-Text)
         const translations = {
             de: {
                 subtitle: "Pädiatrischer Berichtsgenerator",
@@ -389,9 +416,20 @@
                 apiKeyPlaceholder: "API-Key hier einfügen...",
                 apiHint: "Schlüssel wird beim Klick auf 'Bericht generieren' geprüft.",
                 advTitle: "Erweiterte KI-Einstellungen (Modell & Prompt)",
-                lblModel: "Gemini Modell-Bezeichnung",
+                lblModel: "Gemini Modell-Auswahl",
+                modelHint: "Wählt automatisch das beste stabile Modell oder erzwingt die manuelle Auswahl.",
+                optAuto: "🔄 Automatisch (Intelligente Fallback-Kette)",
+                opt38: "gemini-3.8-flash (Standard / Flaggschiff)",
+                opt36: "gemini-3.6-flash (Stabiler Vorgänger)",
+                opt35l: "gemini-3.5-flash-lite (Sehr schnell & zuverlässig)",
+                opt31l: "gemini-3.1-flash-lite (Sicherheits-Fallback)",
+                optLatest: "gemini-flash-latest (Generischer Alias)",
                 lblPrompt: "System-Prompt (Anweisungen an die KI)",
-                systemPrompt: `Du bist eine erfahrene pädiatrische Ergotherapeutin in einer Fachklinik. Deine Aufgabe ist es, aus den eingegebenen Roh-Notizen (inklusive Eingangsdiagnose und Vorberichten) einen zusammenhängenden, professionellen und flüssig formulierten Ergotherapie-Bericht zu verfassen.
+                draftPrefix: "EG_Entwurf_",
+                patchLabel: "Bericht nachträglich anpassen (KI-Patch)",
+                patchPlaceholder: "z. B. Den Tonus-Abschnitt etwas kürzen...",
+                patchBtn: "Anpassen",
+                systemPrompt: `Du bist eine erfahrene pädiatrische Ergotherapeutin in einer Fachklinik. Deine Aufgabe ist es, aus den eingegebenen Roh-Notizen (inklusive Eingangsdiagnose, Anzahl der Behandlungen und Vorberichten) einen zusammenhängenden, professionellen und flüssig formulierten Ergotherapie-Bericht zu verfassen.
 
 STRENGSTE REGELN FÜR DIE FORMATIERUNG:
 - Verwende ABSOLUT KEINE Markdown-Sonderzeichen wie Sternchen (**), Rauten (###), Unterstriche (_) oder Aufzählungszeichen.
@@ -400,10 +438,12 @@ STRENGSTE REGELN FÜR DIE FORMATIERUNG:
                 draftLabel: "Sitzungseingaben verwalten:",
                 btnSaveDraft: "Eingaben zwischenspeichern",
                 btnLoadDraft: "Eingaben laden",
-                draftHint: "Daten werden gegebenenfalls im Downloadordner des Browsers abgelegt und müssen nach Fertigstellung manuell gelöscht werden.",
+                draftHint: "Daten inklusive des angepassten System-Prompts werden im Downloadordner des Browsers abgelegt.",
                 secDiagIn: "Eingangsdiagnose",
                 subDiagIn: "Vorhandene Diagnosen / ICD-Codes bei Klinikaufnahme",
                 diagInPlaceholder: "z. B. F82.0 Umschriebene Entwicklungsstörung der motorischen Funktionen...",
+                secTreatments: "Ergotherapeutische Behandlungen während des Klinikaufenthalts",
+                treatmentsHint: "Anzahl der Behandlungen als Ziffer einfügen",
                 secPrevRep: "Vorbericht(e)",
                 subPrevRep: "Erkenntnisse aus früheren Klinikaufenthalten / Vorbehandlungen",
                 prevRepPlaceholder: "z. B. Bereits im Vorjahr stationär behandelt, Fortschritte im Bereich Tonusregulation erzielt...",
@@ -468,9 +508,20 @@ STRENGSTE REGELN FÜR DIE FORMATIERUNG:
                 apiKeyPlaceholder: "Paste API key here...",
                 apiHint: "Key is validated upon clicking 'Generate Report'.",
                 advTitle: "Advanced AI Settings (Model & Prompt)",
-                lblModel: "Gemini Model Name",
+                lblModel: "Gemini Model Selection",
+                modelHint: "Automatically selects the best stable model or forces manual choice.",
+                optAuto: "🔄 Automatic (Intelligent Fallback Chain)",
+                opt38: "gemini-3.8-flash (Standard / Flagship)",
+                opt36: "gemini-3.6-flash (Stable Predecessor)",
+                opt35l: "gemini-3.5-flash-lite (Very Fast & Reliable)",
+                opt31l: "gemini-3.1-flash-lite (Security Fallback)",
+                optLatest: "gemini-flash-latest (Generic Alias)",
                 lblPrompt: "System Prompt (AI Instructions)",
-                systemPrompt: `You are an experienced pediatric occupational therapist at a specialized clinic. Your task is to write a cohesive, professional, and fluently formulated occupational therapy report based on the raw notes provided (including initial diagnosis and previous reports).
+                draftPrefix: "EG_Draft_",
+                patchLabel: "Adjust report subsequently (AI Patch)",
+                patchPlaceholder: "e.g., shorten the tonus paragraph...",
+                patchBtn: "Adjust",
+                systemPrompt: `You are an experienced pediatric occupational therapist at a specialized clinic. Your task is to write a cohesive, professional, and fluently formulated occupational therapy report based on the raw notes provided (including initial diagnosis, number of treatments, and previous reports).
 
 STRICTEST FORMATTING RULES:
 - Use ABSOLUTELY NO Markdown special characters such as asterisks (**), hashes (###), underscores (_), or bullet points.
@@ -479,10 +530,12 @@ STRICTEST FORMATTING RULES:
                 draftLabel: "Manage Session Inputs:",
                 btnSaveDraft: "Save Inputs",
                 btnLoadDraft: "Load Inputs",
-                draftHint: "Data may be saved in the browser's download folder and must be deleted manually once completed.",
+                draftHint: "Data including custom system prompts are saved to your download folder.",
                 secDiagIn: "Initial Diagnosis",
                 subDiagIn: "Existing diagnoses / ICD codes upon admission",
                 diagInPlaceholder: "e.g., F82.0 Specific developmental disorder of motor function...",
+                secTreatments: "Occupational Therapy Treatments During Hospital Stay",
+                treatmentsHint: "Insert number of treatments as a digit",
                 secPrevRep: "Previous Report(s)",
                 subPrevRep: "Findings from previous clinic stays or treatments",
                 prevRepPlaceholder: "e.g., Inpatient treatment last year, progress in tonus regulation...",
@@ -547,9 +600,20 @@ STRICTEST FORMATTING RULES:
                 apiKeyPlaceholder: "Collez la clé API ici...",
                 apiHint: "La clé est vérifiée lors du clic sur 'Générer le rapport'.",
                 advTitle: "Paramètres IA avancés (Modèle & Prompt)",
-                lblModel: "Nom du modèle Gemini",
+                lblModel: "Sélection du modèle Gemini",
+                modelHint: "Sélectionne automatiquement le meilleur modèle stable ou force le choix manuel.",
+                optAuto: "🔄 Automatique (Chaîne de repli intelligente)",
+                opt38: "gemini-3.8-flash (Standard / Phare)",
+                opt36: "gemini-3.6-flash (Prédécesseur stable)",
+                opt35l: "gemini-3.5-flash-lite (Très rapide & fiable)",
+                opt31l: "gemini-3.1-flash-lite (Repli de sécurité)",
+                optLatest: "gemini-flash-latest (Alias générique)",
                 lblPrompt: "Prompt Système (Instructions à l'IA)",
-                systemPrompt: `Vous êtes une ergothérapeute pédiatrique expérimentée dans une clinique spécialisée. Votre tâche est de rédiger un rapport d'ergothérapie cohérent, professionnel et fluide à partir des notes brutes fournies (y compris le diagnostic initial et les rapports précédents).
+                draftPrefix: "EG_Brouillon_",
+                patchLabel: "Modifier le rapport (Patch IA)",
+                patchPlaceholder: "ex. raccourcir le paragraphe sur le tonus...",
+                patchBtn: "Ajuster",
+                systemPrompt: `Vous êtes une ergothérapeute pédiatrique expérimentée dans une clinique spécialisée. Votre tâche est de rédiger un rapport d'ergothérapie cohérent, professionnel et fluide à partir des notes brutes fournies (y compris le diagnostic initial, le nombre de traitements et les rapports précédents).
 
 RÈGLES DE FORMATAGE LES PLUS STRICTES :
 - N'utilisez ABSOLUTEMENT AUCUN caractère spécial Markdown tel que des astérisques (**), dièses (###), soulignés (_) ou puces.
@@ -558,10 +622,12 @@ RÈGLES DE FORMATAGE LES PLUS STRICTES :
                 draftLabel: "Gérer les entrées :",
                 btnSaveDraft: "Sauvegarder les entrées",
                 btnLoadDraft: "Charger les entrées",
-                draftHint: "Les données peuvent être enregistrées dans le dossier de téléchargement du navigateur et doivent être supprimées manuellement une fois terminées.",
+                draftHint: "Les données incluant le prompt système personnalisé sont sauvegardées.",
                 secDiagIn: "Diagnostic d'entrée",
                 subDiagIn: "Diagnostics existants / codes CIM à l'admission",
                 diagInPlaceholder: "ex. F82.0 Trouble spécifique du développement de la motricité...",
+                secTreatments: "Traitements d'ergothérapie pendant le séjour à l'hôpital",
+                treatmentsHint: "Insérer le nombre de traitements sous forme de chiffre",
                 secPrevRep: "Rapport(s) antérieur(s)",
                 subPrevRep: "Résultats de séjours cliniques antérieurs ou de traitements",
                 prevRepPlaceholder: "ex. Traitement hospitalier l'année dernière, progrès dans la régulation du tonus...",
@@ -626,9 +692,20 @@ RÈGLES DE FORMATAGE LES PLUS STRICTES :
                 apiKeyPlaceholder: "Pegue la clave API aquí...",
                 apiHint: "La clave se verifica al hacer clic en 'Generar informe'.",
                 advTitle: "Configuración avanzada de IA (Modelo y Prompt)",
-                lblModel: "Nombre del modelo Gemini",
+                lblModel: "Selección del modelo Gemini",
+                modelHint: "Selecciona automáticamente el mejor modelo estable o fuerza la selección manual.",
+                optAuto: "🔄 Automático (Cadena de respaldo inteligente)",
+                opt38: "gemini-3.8-flash (Estándar / Buque insignia)",
+                opt36: "gemini-3.6-flash (Predecesor estable)",
+                opt35l: "gemini-3.5-flash-lite (Muy rápido y confiable)",
+                opt31l: "gemini-3.1-flash-lite (Respaldo de seguridad)",
+                optLatest: "gemini-flash-latest (Alias genérico)",
                 lblPrompt: "Prompt del sistema (Instrucciones para la IA)",
-                systemPrompt: `Eres una terapeuta ocupacional pediátrica experimentada en una clínica especializada. Tu tarea es redactar un informe de terapia ocupacional coherente, profesional y fluido basado en las notas en bruto proporcionadas (incluyendo el diagnóstico de ingreso y los informes anteriores).
+                draftPrefix: "EG_Borrador_",
+                patchLabel: "Modificar informe posteriormente (Parche IA)",
+                patchPlaceholder: "ej. acortar el párrafo del tono...",
+                patchBtn: "Ajustar",
+                systemPrompt: `Eres una terapeuta ocupacional pediátrica experimentada en una clínica especializada. Tu tarea es redactar un informe de terapia ocupacional coherente, profesional y fluido basado en las notas en bruto proporcionadas (incluyendo el diagnóstico de ingreso, el número de tratamientos y los informes anteriores).
 
 REGLAS DE FORMATO MÁS ESTRICTAS:
 - No utilices ABSOLUTAMENTE NINGÚN carácter especial de Markdown como asteriscos (**), almohadillas (###), guiones bajos (_) o viñetas.
@@ -637,10 +714,12 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
                 draftLabel: "Gestionar entradas:",
                 btnSaveDraft: "Guardar entradas",
                 btnLoadDraft: "Cargar entradas",
-                draftHint: "Los datos pueden guardarse en la carpeta de descargas del navegador y deben eliminarse manualmente al finalizar.",
+                draftHint: "Los datos incluyendo el prompt personalizado se guardan en la carpeta de descargas.",
                 secDiagIn: "Diagnóstico de ingreso",
                 subDiagIn: "Diagnósticos existentes / códigos CIE al ingreso",
                 diagInPlaceholder: "ej. F82.0 Trastorno específico del desarrollo de la función motora...",
+                secTreatments: "Tratamientos de terapia ocupacional durante la estancia hospitalaria",
+                treatmentsHint: "Insertar número de tratamientos como un dígito",
                 secPrevRep: "Informe(s) anterior(es)",
                 subPrevRep: "Hallazgos de estancias clínicas o tratamientos anteriores",
                 prevRepPlaceholder: "ej. Tratamiento hospitalario el año pasado, progreso en la regulación del tono...",
@@ -676,8 +755,8 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
                 coursePlaceholder: "Cooperación, motivación, resistencia...",
                 recPlaceholder: "Recomendaciones para le tratamiento posterior...",
                 previewPlaceholder: "El informe generado aparecerá aquí...",
-                footerLeft: "&copy; 2026 ErgoGen &middot; Edición Clínica",
-                footerRight: "Desarrollado por <strong>Denis Riewe</strong> &middot; Todos los derechos reservados.",
+                footerLeft: "&copy; 2026 ErgoGen &middot; Edición Clinique",
+                footerRight: "Desarrollado par <strong>Denis Riewe</strong> &middot; Todos los derechos reservados.",
                 errNoKey: "Por favor, introduzca su clave API de Google Gemini en la configuración.",
                 errApi: "Error de generación de IA: ",
                 errNetwork: "Error de red o generación cancelada: ",
@@ -691,6 +770,7 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
             de: [
                 {
                     eingangsdiagnose: "F82.0 Umschriebene Entwicklungsstörung der motorischen Funktionen",
+                    behandlungen: "12",
                     vorbericht: "Bereits vor 12 Monaten stationär behandelt. Damals deutliche Hypotonie und Defizite in der Grobmotorik.",
                     ziel: "Verbesserung der Fein- und Grafomotorik für ein flüssiges Schriftbild in der Schule. Stärkung der Frustrationstoleranz.",
                     wahrnehmung: "Visuelle Wahrnehmung unauffällig. Figur-Grund-Differenzierung zeigt leichte Unsicherheiten bei komplexen Suchbildern.",
@@ -705,6 +785,7 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
             en: [
                 {
                     eingangsdiagnose: "F82.0 Specific developmental disorder of motor function",
+                    behandlungen: "12",
                     vorbericht: "Inpatient treatment 12 months ago. At that time pronounced hypotonia and gross motor deficits.",
                     ziel: "Improving fine and graphomotor skills for fluid handwriting at school. Strengthening frustration tolerance.",
                     wahrnehmung: "Visual perception unremarkable. Figure-ground differentiation shows minor difficulties with complex visual searches.",
@@ -719,6 +800,7 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
             fr: [
                 {
                     eingangsdiagnose: "F82.0 Trouble spécifique du développement de la motricité",
+                    behandlungen: "12",
                     vorbericht: "Traité en hospitalisation il y a 12 mois. Hypotonie prononcée à l'époque.",
                     ziel: "Amélioration de la motricité fine et graphomotrice pour une écriture fluide. Renforcement de la tolérance à la frustration.",
                     wahrnehmung: "Perception visuelle normale. Légères difficultés de différenciation figure-fond sur des images complexes.",
@@ -733,6 +815,7 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
             es: [
                 {
                     eingangsdiagnose: "F82.0 Trastorno específico del desarrollo de la función motora",
+                    behandlungen: "12",
                     vorbericht: "Tratamiento hospitalario hace 12 meses. En ese momento hipotonía pronunciada.",
                     ziel: "Mejora de la motricidad fina y grafomotricidad para una escritura fluida. Fortalecimiento de la tolerancia a la frustración.",
                     wahrnehmung: "Percepción visual adecuada. Ligeras dificultades en discriminación figura-fondo.",
@@ -805,8 +888,16 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
 
             document.getElementById('ui-adv-title').innerText = t.advTitle;
             document.getElementById('ui-lbl-model').innerText = t.lblModel;
+            document.getElementById('ui-model-hint').innerText = t.modelHint;
+            
+            document.getElementById('opt-m-auto').innerText = t.optAuto;
+            document.getElementById('opt-m-38').innerText = t.opt38;
+            document.getElementById('opt-m-36').innerText = t.opt36;
+            document.getElementById('opt-m-35l').innerText = t.opt35l;
+            document.getElementById('opt-m-31l').innerText = t.opt31l;
+            document.getElementById('opt-m-latest').innerText = t.optLatest;
+
             document.getElementById('ui-lbl-prompt').innerText = t.lblPrompt;
-            document.getElementById('system-prompt-input').value = t.systemPrompt;
 
             document.getElementById('ui-draft-label').innerText = t.draftLabel;
             document.getElementById('ui-btn-save-draft').innerText = t.btnSaveDraft;
@@ -816,6 +907,13 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
             document.getElementById('ui-sec-diag-in').innerHTML = `<i data-lucide="clipboard-plus" class="w-4 h-4 text-indigo-600"></i> ${t.secDiagIn}`;
             document.getElementById('ui-sub-diag-in').innerText = t.subDiagIn;
             document.getElementById('field-eingangsdiagnose').placeholder = t.diagInPlaceholder;
+
+            document.getElementById('ui-sec-treatments').innerHTML = `<i data-lucide="calendar-check" class="w-4 h-4 text-indigo-600"></i> ${t.secTreatments}`;
+            document.getElementById('ui-treatments-hint').innerText = t.treatmentsHint;
+
+            document.getElementById('ui-patch-label').innerHTML = `<i data-lucide="wand-2" class="w-3.5 h-3.5 text-indigo-600"></i> ${t.patchLabel}`;
+            document.getElementById('patch-input').placeholder = t.patchPlaceholder;
+            document.getElementById('ui-btn-patch').innerText = t.patchBtn;
 
             document.getElementById('ui-sec-prev-rep').innerHTML = `<i data-lucide="history" class="w-4 h-4 text-indigo-600"></i> ${t.secPrevRep}`;
             document.getElementById('ui-sub-prev-rep').innerText = t.subPrevRep;
@@ -875,8 +973,12 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
         }
 
         async function saveDraftToFile() {
+            let lang = document.getElementById('language-select').value;
+            let t = translations[lang] || translations.de;
+
             let data = {
                 eingangsdiagnose: document.getElementById('field-eingangsdiagnose').value,
+                behandlungen: document.getElementById('field-behandlungen').value,
                 vorbericht: document.getElementById('field-vorbericht').value,
                 ziel: document.getElementById('field-ziel').value,
                 wahrnehmung: document.getElementById('field-wahrnehmung').value,
@@ -886,6 +988,7 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
                 feinmotorik: document.getElementById('field-feinmotorik').value,
                 verlauf: document.getElementById('field-verlauf').value,
                 empfehlung: document.getElementById('field-empfehlung').value,
+                systemPrompt: document.getElementById('system-prompt-input').value,
                 preview: document.getElementById('preview-text').value
             };
 
@@ -897,7 +1000,7 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
             let min = String(now.getMinutes()).padStart(2, '0');
             let ss = String(now.getSeconds()).padStart(2, '0');
             let timestamp = `${yyyy}${mm}${dd}-${hh}${min}${ss}`;
-            let filename = `EG_Entwurf_${timestamp}.txt`;
+            let filename = `${t.draftPrefix}${timestamp}.txt`;
             let fileContent = JSON.stringify(data, null, 2);
 
             if (window.showSaveFilePicker) {
@@ -940,6 +1043,7 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
                 try {
                     let data = JSON.parse(e.target.result);
                     document.getElementById('field-eingangsdiagnose').value = data.eingangsdiagnose || '';
+                    document.getElementById('field-behandlungen').value = data.behandlungen || '';
                     document.getElementById('field-vorbericht').value = data.vorbericht || '';
                     document.getElementById('field-ziel').value = data.ziel || '';
                     document.getElementById('field-wahrnehmung').value = data.wahrnehmung || '';
@@ -949,6 +1053,9 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
                     document.getElementById('field-feinmotorik').value = data.feinmotorik || '';
                     document.getElementById('field-verlauf').value = data.verlauf || '';
                     document.getElementById('field-empfehlung').value = data.empfehlung || '';
+                    if (data.systemPrompt) {
+                        document.getElementById('system-prompt-input').value = data.systemPrompt;
+                    }
                     document.getElementById('preview-text').value = data.preview || '';
                     updateWordCount();
                 } catch (err) {
@@ -997,7 +1104,8 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
 
         window.onload = function() {
             lucide.createIcons();
-            document.getElementById('system-prompt-input').value = translations.de.systemPrompt;
+            let lang = document.getElementById('language-select').value;
+            document.getElementById('system-prompt-input').value = translations[lang].systemPrompt;
             
             document.getElementById('pin-input').focus();
             document.getElementById('pin-input').addEventListener('keypress', function(e) {
@@ -1052,6 +1160,7 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
             demoIndex = (demoIndex + 1) % list.length;
 
             document.getElementById('field-eingangsdiagnose').value = data.eingangsdiagnose;
+            document.getElementById('field-behandlungen').value = data.behandlungen;
             document.getElementById('field-vorbericht').value = data.vorbericht;
             document.getElementById('field-ziel').value = data.ziel;
             document.getElementById('field-wahrnehmung').value = data.wahrnehmung;
@@ -1066,6 +1175,7 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
 
         function clearData() {
             document.getElementById('field-eingangsdiagnose').value = '';
+            document.getElementById('field-behandlungen').value = '';
             document.getElementById('field-vorbericht').value = '';
             document.getElementById('field-ziel').value = '';
             document.getElementById('field-wahrnehmung').value = '';
@@ -1086,6 +1196,56 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
             }
         }
 
+        async function attemptStreamGeneration(modelName, apiKey, payload, previewTextarea, signal) {
+            let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:streamGenerateContent?alt=sse&key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                signal: signal,
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                let errData = await response.json().catch(() => ({}));
+                let errMessage = errData.error ? errData.error.message : "HTTP-Fehler (" + response.status + ")";
+                throw new Error(errMessage);
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+            let accumulatedText = "";
+            let buffer = "";
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+                let lines = buffer.split("\n");
+                buffer = lines.pop();
+
+                for (let line of lines) {
+                    line = line.trim();
+                    if (line.startsWith("data: ")) {
+                        let jsonStr = line.replace(/^data:\s*/, "");
+                        if (jsonStr === "[DONE]") continue;
+                        try {
+                            let parsed = JSON.parse(jsonStr);
+                            if (parsed.candidates && parsed.candidates[0].content && parsed.candidates[0].content.parts[0].text) {
+                                let chunk = parsed.candidates[0].content.parts[0].text;
+                                accumulatedText += chunk;
+                                
+                                let cleanedText = accumulatedText.replace(/[*#_`]/g, '');
+                                previewTextarea.value = cleanedText;
+                                previewTextarea.scrollTop = previewTextarea.scrollHeight;
+                                updateWordCount();
+                            }
+                        } catch (e) {}
+                    }
+                }
+            }
+            return accumulatedText;
+        }
+
         async function generateReport() {
             let errorBox = document.getElementById('error-box');
             let genBtn = document.getElementById('generate-btn');
@@ -1097,6 +1257,7 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
             let t = translations[selectedLang] || translations.de;
 
             let eingangsdiagnose = document.getElementById('field-eingangsdiagnose').value.trim();
+            let behandlungen = document.getElementById('field-behandlungen').value.trim();
             let vorbericht = document.getElementById('field-vorbericht').value.trim();
             let ziel = document.getElementById('field-ziel').value.trim();
             let wahrnehmung = document.getElementById('field-wahrnehmung').value.trim();
@@ -1107,19 +1268,15 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
             let verlauf = document.getElementById('field-verlauf').value.trim();
             let empfehlung = document.getElementById('field-empfehlung').value.trim();
 
-            if (!eingangsdiagnose && !vorbericht && !ziel && !wahrnehmung && !sensorik && !kognition && !grobmotorik && !feinmotorik && !verlauf && !empfehlung) {
+            if (!eingangsdiagnose && !behandlungen && !vorbericht && !ziel && !wahrnehmung && !sensorik && !kognition && !grobmotorik && !feinmotorik && !verlauf && !empfehlung) {
                 let proceed = confirm(t.confirmMissingInputs);
                 if (!proceed) return;
             }
 
-            // DATENSCHUTZ-POP-UP BEI JEDEM KLICK AUF GENERIEREN
             let proceedPrivacy = confirm(t.privacyConfirm);
             if (!proceedPrivacy) return;
 
             let apiKey = document.getElementById('api-key-input').value.trim();
-            let selectedModel = document.getElementById('api-model-input').value.trim() || 'gemini-3.8-flash';
-            let systemPrompt = document.getElementById('system-prompt-input').value.trim();
-
             if (!apiKey) {
                 updateStatusUI('unlocked');
                 errorBox.innerText = t.errNoKey;
@@ -1127,21 +1284,30 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
                 return;
             }
 
-            // KONTINGENT / ZÄHLER SOFORT BEI ANFRAGE HOCHZÄHLEN
+            updateStatusUI('active');
             incrementDailyCount();
 
             let lengthSetting = document.getElementById('report-length').value;
             let toneSetting = document.getElementById('report-tone').value;
+            let selectedModelSetting = document.getElementById('api-model-input').value;
+            let systemPrompt = document.getElementById('system-prompt-input').value.trim();
 
             let styleInstruction = `\n\nSTIL & DUKTUS:\n- Stil: ${toneSetting === 'arzt' ? 'Klinisch-medizinischer Fachjargon. Synthetisiere die Befunde zu einem geschlossenen Bild.' : 'Empathischer, klar strukturierter Bericht für Eltern und Pädagogen.'}\n- Umfang: ${lengthSetting === 'knapp' ? 'Prägnant und auf das Wesentliche fokussiert.' : lengthSetting === 'ausfuehrlich' ? 'Ausführliche, tiefgehende Ausformulierung mit allen Details.' : 'Standard-Umfang mit klarer Struktur.'}\n- Erfinde keine Fakten, sondern übersetze die Stichpunkte professionell.`;
 
-            let userNotes = `BEFUND-NOTIZEN:\n- Eingangsdiagnose: ${eingangsdiagnose}\n- Vorbericht: ${vorbericht}\n- Therapieziel: ${ziel}\n- Wahrnehmung: ${wahrnehmung}\n- Sensorik: ${sensorik}\n- Kognition: ${kognition}\n- Grobmotorik: ${grobmotorik}\n- Feinmotorik: ${feinmotorik}\n- Verlauf: ${verlauf}\n- Empfehlung: ${empfehlung}`;
+            let userNotes = `BEFUND-NOTIZEN:\n- Eingangsdiagnose: ${eingangsdiagnose}\n- Anzahl ergotherapeutischer Behandlungen während des Klinikaufenthalts: ${behandlungen}\n- Vorbericht: ${vorbericht}\n- Therapieziel: ${ziel}\n- Wahrnehmung: ${wahrnehmung}\n- Sensorik: ${sensorik}\n- Kognition: ${kognition}\n- Grobmotorik: ${grobmotorik}\n- Feinmotorik: ${feinmotorik}\n- Verlauf: ${verlauf}\n- Empfehlung: ${empfehlung}`;
+
+            let apiPayload = {
+                contents: [{
+                    parts: [
+                        { text: systemPrompt + styleInstruction + "\n\n" + userNotes }
+                    ]
+                }]
+            };
 
             document.getElementById('loading-spinner').classList.remove('hidden');
             previewTextarea.value = '';
             updateWordCount();
             
-            // Buttons umschalten (Generieren sperren, Abbrechen freigeben)
             genBtn.disabled = true;
             genBtn.classList.add('opacity-50', 'cursor-not-allowed');
             cancelBtn.disabled = false;
@@ -1158,80 +1324,164 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
 
             abortController = new AbortController();
 
-            try {
-                let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:streamGenerateContent?alt=sse&key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    signal: abortController.signal,
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [
-                                { text: systemPrompt + styleInstruction + "\n\n" + userNotes }
-                            ]
-                        }]
-                    })
-                });
+            let modelsToTry = [];
+            if (selectedModelSetting === 'auto') {
+                modelsToTry = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'];
+            } else {
+                modelsToTry = [selectedModelSetting];
+            }
 
-                if (!response.ok) {
-                    let errData = await response.json().catch(() => ({}));
-                    let errMessage = errData.error ? errData.error.message : "Fehler beim API-Call (" + response.status + ")";
-                    throw new Error(errMessage);
-                }
+            let success = false;
+            let usedModelName = '';
 
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder("utf-8");
-                let accumulatedText = "";
-                let buffer = "";
-
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-
-                    buffer += decoder.decode(value, { stream: true });
-                    let lines = buffer.split("\n");
-                    buffer = lines.pop();
-
-                    for (let line of lines) {
-                        line = line.trim();
-                        if (line.startsWith("data: ")) {
-                            let jsonStr = line.replace(/^data:\s*/, "");
-                            if (jsonStr === "[DONE]") continue;
-                            try {
-                                let parsed = JSON.parse(jsonStr);
-                                if (parsed.candidates && parsed.candidates[0].content && parsed.candidates[0].content.parts[0].text) {
-                                    let chunk = parsed.candidates[0].content.parts[0].text;
-                                    accumulatedText += chunk;
-                                    
-                                    let cleanedText = accumulatedText.replace(/[*#_`]/g, '');
-                                    previewTextarea.value = cleanedText;
-                                    previewTextarea.scrollTop = previewTextarea.scrollHeight;
-                                    updateWordCount();
-                                }
-                            } catch (e) {}
-                        }
+            for (let model of modelsToTry) {
+                if (abortController.signal.aborted) break;
+                try {
+                    usedModelName = model;
+                    await attemptStreamGeneration(model, apiKey, apiPayload, previewTextarea, abortController.signal);
+                    success = true;
+                    break;
+                } catch (err) {
+                    if (err.name === 'AbortError') {
+                        break;
                     }
+                    console.warn(`Modell ${model} fehlgeschlagen, versuche nächstes...`, err.message);
                 }
+            }
 
+            clearInterval(timerInterval);
+            document.getElementById('loading-spinner').classList.add('hidden');
+
+            if (success) {
+                let currentText = previewTextarea.value.trim();
+                currentText = currentText.replace(/\[Generiert mit Modell:.*?\]/g, '').trim();
+                previewTextarea.value = currentText + `\n\n[Generiert mit Modell: ${usedModelName}]`;
+                updateWordCount();
                 updateStatusUI('active');
-
-            } catch (err) {
-                if (err.name === 'AbortError') {
-                    errorBox.innerText = "Generierung durch Benutzer abgebrochen.";
+            } else {
+                if (!abortController.signal.aborted) {
+                    errorBox.innerText = t.errNetwork + "Alle Modelle in der Kette waren überlastet oder nicht erreichbar.";
+                    errorBox.classList.remove('hidden');
                 } else {
-                    errorBox.innerText = t.errNetwork + err.message;
+                    errorBox.innerText = "Generierung durch Benutzer abgebrochen.";
+                    errorBox.classList.remove('hidden');
                 }
-                errorBox.classList.remove('hidden');
                 updateStatusUI('unlocked');
-            } finally {
-                clearInterval(timerInterval);
-                document.getElementById('loading-spinner').classList.add('hidden');
-                
-                // Buttons zurücksetzen
-                genBtn.disabled = false;
-                genBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                cancelBtn.disabled = true;
-                cancelBtn.classList.remove('bg-red-500', 'hover:bg-red-600', 'text-white');
-                cancelBtn.classList.add('bg-slate-200', 'text-slate-400', 'cursor-not-allowed');
+            }
+
+            genBtn.disabled = false;
+            genBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            cancelBtn.disabled = true;
+            cancelBtn.classList.remove('bg-red-500', 'hover:bg-red-600', 'text-white');
+            cancelBtn.classList.add('bg-slate-200', 'text-slate-400', 'cursor-not-allowed');
+        }
+
+        // Funktion für die gezielte Nachbearbeitung (KI-Patch) mit Timer & Abbrechen
+        async function patchReport() {
+            let errorBox = document.getElementById('error-box');
+            let previewTextarea = document.getElementById('preview-text');
+            let patchInput = document.getElementById('patch-input');
+            let patchBtn = document.getElementById('patch-btn');
+            let cancelBtn = document.getElementById('cancel-btn');
+            errorBox.classList.add('hidden');
+
+            let selectedLang = document.getElementById('language-select').value;
+            let t = translations[selectedLang] || translations.de;
+
+            let currentReport = previewTextarea.value.trim();
+            let patchInstruction = patchInput.value.trim();
+
+            if (!currentReport) {
+                alert(t.errNoText);
+                return;
+            }
+            if (!patchInstruction) {
+                return;
+            }
+
+            let apiKey = document.getElementById('api-key-input').value.trim();
+            if (!apiKey) {
+                errorBox.innerText = t.errNoKey;
+                errorBox.classList.remove('hidden');
+                return;
+            }
+
+            patchBtn.disabled = true;
+            patchBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            document.getElementById('loading-spinner').classList.remove('hidden');
+
+            // Abbrechen-Button für den Patch-Prozess aktivieren
+            cancelBtn.disabled = false;
+            cancelBtn.classList.remove('bg-slate-200', 'text-slate-400', 'cursor-not-allowed');
+            cancelBtn.classList.add('bg-red-500', 'hover:bg-red-600', 'text-white');
+
+            // Timer starten
+            secondsElapsed = 0;
+            document.getElementById('timer-count').innerText = secondsElapsed;
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                secondsElapsed++;
+                document.getElementById('timer-count').innerText = secondsElapsed;
+            }, 1000);
+
+            abortController = new AbortController();
+
+            let patchPrompt = `Du bist eine erfahrene pädiatrische Ergotherapeutin. Dir liegt bereits ein fertig generierter ergotherapeutischer Bericht vor.\n\nFühre AUSSCHLIESSLICH die vom Benutzer gewünschte Korrektur oder Anpassung am Text durch, ohne den Rest des Textes unnötig zu verändern oder zu erfinden. Behalte strikt den klinischen Stil, die Fließtext-Struktur und die Formatierungsregeln bei (KEINE Markdown-Sonderzeichen wie Sternchen oder Rauten).\n\nAKTUELLER BERICHT:\n${currentReport}\n\nGEWÜNSCHTE ÄNDERUNG / KORREKTUR:\n${patchInstruction}`;
+
+            let apiPayload = {
+                contents: [{
+                    parts: [{ text: patchPrompt }]
+                }]
+            };
+
+            let selectedModelSetting = document.getElementById('api-model-input').value;
+            let modelsToTry = selectedModelSetting === 'auto' 
+                ? ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'] 
+                : [selectedModelSetting];
+
+            let success = false;
+            let usedModelName = '';
+            previewTextarea.value = '';
+
+            for (let model of modelsToTry) {
+                if (abortController.signal.aborted) break;
+                try {
+                    usedModelName = model;
+                    await attemptStreamGeneration(model, apiKey, apiPayload, previewTextarea, abortController.signal);
+                    success = true;
+                    break;
+                } catch (err) {
+                    if (err.name === 'AbortError') break;
+                    console.warn(`Patch mit Modell ${model} fehlgeschlagen, versuche nächstes...`, err.message);
+                }
+            }
+
+            clearInterval(timerInterval);
+            document.getElementById('loading-spinner').classList.add('hidden');
+            patchBtn.disabled = false;
+            patchBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+            // Abbrechen-Button wieder deaktivieren
+            cancelBtn.disabled = true;
+            cancelBtn.classList.remove('bg-red-500', 'hover:bg-red-600', 'text-white');
+            cancelBtn.classList.add('bg-slate-200', 'text-slate-400', 'cursor-not-allowed');
+
+            if (success) {
+                let patchedText = previewTextarea.value.trim();
+                patchedText = patchedText.replace(/\[(Generiert|Gepatcht) mit Modell:.*?\]/g, '').trim();
+                previewTextarea.value = patchedText + `\n\n[Gepatcht mit Modell: ${usedModelName}]`;
+                patchInput.value = '';
+                updateWordCount();
+            } else {
+                if (!abortController.signal.aborted) {
+                    previewTextarea.value = currentReport;
+                    errorBox.innerText = t.errNetwork + "Konnte den Bericht nicht anpassen.";
+                    errorBox.classList.remove('hidden');
+                } else {
+                    previewTextarea.value = currentReport;
+                    errorBox.innerText = "Anpassung durch Benutzer abgebrochen.";
+                    errorBox.classList.remove('hidden');
+                }
             }
         }
 
@@ -1247,7 +1497,9 @@ REGLAS DE FORMATO MÁS ESTRICTAS:
 
             const { Document, Packer, Paragraph, TextRun } = window.docx;
 
-            const paragraphs = text.split('\n').map(line => {
+            let cleanText = text.replace(/\[(Generiert|Gepatcht) mit Modell:.*?\]/g, '').trim();
+
+            const paragraphs = cleanText.split('\n').map(line => {
                 return new Paragraph({
                     children: [
                         new TextRun({ text: line, font: "Calibri", size: 22 })
